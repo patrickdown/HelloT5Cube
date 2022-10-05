@@ -1,0 +1,126 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Header Files\GLWrapper">
+      <UniqueIdentifier>{5d77fa35-4bc2-4eb7-b96e-de54ec77f204}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Util">
+      <UniqueIdentifier>{6eefb013-fd29-40a0-8ea2-db0fe603d557}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\GLWrapper">
+      <UniqueIdentifier>{5858b872-89b0-4cba-8d1c-7ae2f2cc04b6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\T5Wrapper">
+      <UniqueIdentifier>{74829824-9abf-4506-910d-8565c181e014}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\T5Wrapper">
+      <UniqueIdentifier>{d965de39-88a9-41ca-a8f0-4b7397c52876}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\GLApplication">
+      <UniqueIdentifier>{44d72d96-b493-473e-8219-377cbfc42235}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\GLApplication">
+      <UniqueIdentifier>{7a16a2fb-4bdd-41ab-a7fc-938e226d0f3b}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="glad\OpenGL_4_6_Core\src\gl.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="HelloT5Cube.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="glwrapper\src\Shader.cpp">
+      <Filter>Source Files\GLWrapper</Filter>
+    </ClCompile>
+    <ClCompile Include="glwrapper\src\VertexArray.cpp">
+      <Filter>Source Files\GLWrapper</Filter>
+    </ClCompile>
+    <ClCompile Include="glwrapper\src\Framebuffer.cpp">
+      <Filter>Source Files\GLWrapper</Filter>
+    </ClCompile>
+    <ClCompile Include="t5wrapper\src\Context.cpp">
+      <Filter>Source Files\T5Wrapper</Filter>
+    </ClCompile>
+    <ClCompile Include="t5wrapper\src\Glasses.cpp">
+      <Filter>Source Files\T5Wrapper</Filter>
+    </ClCompile>
+    <ClCompile Include="glapplication\src\Application.cpp">
+      <Filter>Source Files\GLApplication</Filter>
+    </ClCompile>
+    <ClCompile Include="glapplication\src\Transform.cpp">
+      <Filter>Source Files\GLApplication</Filter>
+    </ClCompile>
+    <ClCompile Include="InlineVertexData.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="InlineShaderCode.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="VertexDefinition.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="HelloT5Cube.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="glwrapper\glwrapper\Buffer.h">
+      <Filter>Header Files\GLWrapper</Filter>
+    </ClInclude>
+    <ClInclude Include="glwrapper\glwrapper\Framebuffer.h">
+      <Filter>Header Files\GLWrapper</Filter>
+    </ClInclude>
+    <ClInclude Include="glwrapper\glwrapper\GLWrapper.h">
+      <Filter>Header Files\GLWrapper</Filter>
+    </ClInclude>
+    <ClInclude Include="glwrapper\glwrapper\Renderbuffer.h">
+      <Filter>Header Files\GLWrapper</Filter>
+    </ClInclude>
+    <ClInclude Include="glwrapper\glwrapper\Shader.h">
+      <Filter>Header Files\GLWrapper</Filter>
+    </ClInclude>
+    <ClInclude Include="glwrapper\glwrapper\Texture.h">
+      <Filter>Header Files\GLWrapper</Filter>
+    </ClInclude>
+    <ClInclude Include="glwrapper\glwrapper\VertexArray.h">
+      <Filter>Header Files\GLWrapper</Filter>
+    </ClInclude>
+    <ClInclude Include="util\util\Wrapper.h">
+      <Filter>Header Files\Util</Filter>
+    </ClInclude>
+    <ClInclude Include="t5wrapper\t5wrapper\Context.h">
+      <Filter>Header Files\T5Wrapper</Filter>
+    </ClInclude>
+    <ClInclude Include="t5wrapper\t5wrapper\Conversions.h">
+      <Filter>Header Files\T5Wrapper</Filter>
+    </ClInclude>
+    <ClInclude Include="t5wrapper\t5wrapper\Glasses.h">
+      <Filter>Header Files\T5Wrapper</Filter>
+    </ClInclude>
+    <ClInclude Include="t5wrapper\t5wrapper\OptError.h">
+      <Filter>Header Files\T5Wrapper</Filter>
+    </ClInclude>
+    <ClInclude Include="glapplication\glapplication\Application.h">
+      <Filter>Header Files\GLApplication</Filter>
+    </ClInclude>
+    <ClInclude Include="glapplication\glapplication\Transform.h">
+      <Filter>Header Files\GLApplication</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

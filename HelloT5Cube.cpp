@@ -143,8 +143,6 @@ bool HelloT5Cube::InitializeT5()
 		std::cout << "Didn't find any glasses" << std::endl;
 	}
 
-	std::cout << "IPD = " << glasses.GetIpd() << std::endl;
-
 	isPreviousPoseValid = false;
 	isPoseValid = false;
 
@@ -197,6 +195,8 @@ bool HelloT5Cube::ConnectGlasses(std::string glassesID)
 		std::cerr << "Error: " << t5GetResultMessage(err) << " acquiring glasses " << glassesID << std::endl;
 		return false;
 	}
+
+	std::cout << "IPD = " << glasses.GetIpd() << std::endl;
 
 	return true;
 }

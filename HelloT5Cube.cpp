@@ -141,6 +141,7 @@ bool HelloT5Cube::InitializeT5()
 	else
 	{
 		std::cout << "Didn't find any glasses" << std::endl;
+		return false;
 	}
 
 	isPreviousPoseValid = false;

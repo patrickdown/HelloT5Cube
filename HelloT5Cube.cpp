@@ -118,14 +118,10 @@ bool HelloT5Cube::InitializeT5()
 
 	auto glassesResult = context.GetConnectedGlasses();
 
-	if (auto* pErr = std::get_if<T5_Result>(&glassesResult))
+	if (!glassesResult.TryGet(glassesIDList))
 	{
-		std::cerr << "Error: " << t5GetResultMessage(*pErr) << std::endl;
+		std::cerr << "Error: " << glassesResult.GetErrorMessage() << std::endl;
 		return false;
-	}
-	else
-	{
-		glassesIDList = std::get<std::vector<std::string>>(glassesResult);
 	}
 
 	for (auto glassesID : glassesIDList)

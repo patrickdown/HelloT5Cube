@@ -10,6 +10,7 @@ namespace GLWrapper {
 
 		public:
 		explicit operator const GLuint& () { return handle; }
+		explicit operator void*() { return (void*) & handle; }
 
 
 		void Create(GLenum target)

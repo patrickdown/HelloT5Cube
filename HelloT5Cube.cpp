@@ -99,7 +99,7 @@ bool HelloT5Cube::InitializeContext()
 	leftEye.Initialize(defaultWidth, defaultHeight);
 	rightEye.Initialize(defaultWidth, defaultHeight);
 
-	float ipd = glasses.GetIpd();
+	float ipd = glasses->GetIpd();
 
 	leftTransform.SetPosition(-ipd / 2.0f,0,0);
 	rightTransform.SetPosition(ipd / 2.0f,0,0);
@@ -113,15 +113,17 @@ bool HelloT5Cube::InitializeContext()
 bool HelloT5Cube::InitializeT5()
 {
 
-	context = T5W::Context::Make(windowTitle, "0.0.1");
+	context = MakeOwned<T5W::Context>();
+	
+	auto result = context->Create(windowTitle, "0.0.1");
 
-	if (context.ErrorCode() != T5_SUCCESS)
+	if (result != T5_SUCCESS)
 	{
-		std::cerr << "Error: " << t5GetResultMessage(context.ErrorCode()) << std::endl;
+		std::cerr << "Error: " << t5GetResultMessage(result) << std::endl;
 		return false;
 	}
 
-	auto glassesResult = context.GetConnectedGlasses();
+	auto glassesResult = context->GetConnectedGlasses();
 
 	if (!glassesResult.TryGet(glassesIDList))
 	{
@@ -157,48 +159,49 @@ bool HelloT5Cube::InitializeT5()
 
 bool HelloT5Cube::ConnectGlasses(std::string glassesID)
 {
-	glasses = T5W::Glasses::Make(context, glassesID);
+	glasses = MakeOwned<T5W::Glasses>();
 
-	if (context.ErrorCode() != T5_SUCCESS)
+	auto err = glasses->Create(*context, glassesID);
+	if (err != T5_SUCCESS)
 	{
-		std::cerr << "Error: " << t5GetResultMessage(context.ErrorCode()) << " creating glasses " << glassesID << std::endl;
+		std::cerr << "Error: [" << t5GetResultMessage(err) << "] creating glasses " << glassesID << std::endl;
 		return false;
 	}
 
 	std::cout << "Created glasses: " << glassesID << std::endl;
 
-	std::cout << "Glasses " << glassesID << " state: " << GetConnectionText(glasses.GetConnectionState()) << std::endl;
+	std::cout << "Glasses " << glassesID << " state: " << GetConnectionText(glasses->GetConnectionState()) << std::endl;
 
-	auto err = glasses.Acquire(windowTitle);
+	err = glasses->Acquire(windowTitle);
 	if (err != T5_SUCCESS)
 	{
-		std::cerr << "Error: " << t5GetResultMessage(err) << " acquiring glasses " << glassesID << std::endl;
+		std::cerr << "Error: [" << t5GetResultMessage(err) << "] acquiring glasses " << glassesID << std::endl;
 		return false;
 	}
 
-	std::cout << "Glasses " << glassesID << " state: " << GetConnectionText(glasses.GetConnectionState()) << std::endl;
+	std::cout << "Glasses " << glassesID << " state: " << GetConnectionText(glasses->GetConnectionState()) << std::endl;
 
 	for (;;)
 	{
-		err = glasses.EnsureReady();
+		err = glasses->EnsureReady();
 		if (err == T5_SUCCESS)
 			break;
 		if (err == T5_ERROR_TRY_AGAIN)
 			continue;
-		std::cerr << "Error: " << t5GetResultMessage(err) << " readying glasses " << glassesID << std::endl;
+		std::cerr << "Error: [" << t5GetResultMessage(err) << "] readying glasses " << glassesID << std::endl;
 		return false;
 	}
 
-	std::cout << "Glasses " << glassesID << " state: " << GetConnectionText(glasses.GetConnectionState()) << std::endl;
+	std::cout << "Glasses " << glassesID << " state: " << GetConnectionText(glasses->GetConnectionState()) << std::endl;
 
-	err = glasses.InitGlassesOpenGLContext();
+	err = glasses->InitGlassesOpenGLContext();
 	if (err != T5_SUCCESS)
 	{
-		std::cerr << "Error: " << t5GetResultMessage(err) << " acquiring glasses " << glassesID << std::endl;
+		std::cerr << "Error: [" << t5GetResultMessage(err) << "] initializing OpenGL for glasses " << glassesID << std::endl;
 		return false;
 	}
 
-	std::cout << "IPD = " << glasses.GetIpd() << std::endl;
+	std::cout << "IPD = " << glasses->GetIpd() << std::endl;
 
 	return true;
 }
@@ -214,7 +217,7 @@ void HelloT5Cube::UpdateGlassesPose()
 {
 	isPreviousPoseValid = isPoseValid;
 
-	auto poseResult = glasses.GetGlassesPose();
+	auto poseResult = glasses->GetGlassesPose();
 
 	T5_GlassesPose pose;
 	if (poseResult.TryGet(pose))
@@ -291,8 +294,11 @@ void HelloT5Cube::SendFramesToGlasses()
 
 		frameInfo.texWidth_PIX = leftEye.width;
 		frameInfo.texHeight_PIX = leftEye.height;
-		//frameInfo.leftTexHandle = (void *)&leftEye.texture.Handle();
-		//frameInfo.rightTexHandle = (void*)&rightEye.texture.Handle();
+
+		// Currently this is a pointer to the internal texture handle
+		// Also tried casting the handle value to (void*)
+		frameInfo.leftTexHandle = (void*)(*leftEye.texture);
+		frameInfo.rightTexHandle = (void*)(*rightEye.texture);
 
 		auto leftPos = leftTransform.InverseTranformPosition(glm::vec3(0,0,0));
 		leftPos = glassesPose.InverseTranformPosition(leftPos);
@@ -308,7 +314,7 @@ void HelloT5Cube::SendFramesToGlasses()
 		frameInfo.isUpsideDown = false;
 		frameInfo.isSrgb = false;
 
-		result = glasses.SendFrameToGlasses(frameInfo);
+		result = glasses->SendFrameToGlasses(frameInfo);
 		isFrameSent = (result == T5_SUCCESS);
 
 		if (!isFrameSent && isPreviousFrameSent)

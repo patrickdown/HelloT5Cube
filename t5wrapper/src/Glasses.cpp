@@ -2,15 +2,15 @@
 
 namespace T5Wrapper {
 
-bool Glasses::CreateHandle(T5_Glasses& handle, T5_Result& errorCode, Context& context, std::string glassesID)
+T5_Result Glasses::Create(Context context, std::string glassesID)
 {
-	errorCode = t5CreateGlasses(context.Handle(), glassesID.c_str(), &handle);
-	return errorCode == T5_SUCCESS;
+	return t5CreateGlasses((T5_Context)context, glassesID.c_str(), &handle);
 }
 
-void Glasses::DeleteHandle(T5_Glasses& handle)
+void Glasses::Delete()
 {
-	t5DestroyGlasses(&handle);
+	if(handle != 0)
+		t5DestroyGlasses(&handle);
 }
 
 Glasses::~Glasses()
@@ -21,7 +21,7 @@ Glasses::~Glasses()
 
 T5_Result Glasses::Acquire(std::string displayName)
 {
-	T5_Result err = t5AcquireGlasses(Handle(), displayName.c_str());
+	T5_Result err = t5AcquireGlasses(handle, displayName.c_str());
 	isAcquired = (err == T5_SUCCESS);
 	return err;
 }
@@ -29,35 +29,35 @@ T5_Result Glasses::Acquire(std::string displayName)
 T5_Result Glasses::Release()
 {
 	isAcquired = false;
-	return t5ReleaseGlasses(Handle());
+	return t5ReleaseGlasses(handle);
 }
 
 T5_Result Glasses::EnsureReady()
 {
-	return t5EnsureGlassesReady(Handle());
+	return t5EnsureGlassesReady(handle);
 }
 
 T5_Result Glasses::InitGlassesOpenGLContext()
 {
-	return t5InitGlassesGraphicsContext(Handle(), kT5_GraphicsApi_Gl, nullptr);
+	return t5InitGlassesGraphicsContext(handle, kT5_GraphicsApi_Gl, nullptr);
 }
 
 T5_Result Glasses::SendFrameToGlasses(const T5_FrameInfo& info)
 {
-	return t5SendFrameToGlasses(Handle(),&info);
+	return t5SendFrameToGlasses(handle,&info);
 }
 
 OptGlassesPose Glasses::GetGlassesPose()
 {
 	T5_GlassesPose pose;
-	auto err = t5GetGlassesPose(Handle(), &pose);
+	auto err = t5GetGlassesPose(handle, &pose);
 	return err ? OptGlassesPose(err) : OptGlassesPose(pose);
 }
 
 OptConnectionState Glasses::GetConnectionState()
 {
 	T5_ConnectionState connectionState;
-	T5_Result err = t5GetGlassesConnectionState(Handle(), &connectionState);
+	T5_Result err = t5GetGlassesConnectionState(handle, &connectionState);
 
 	return err ? OptConnectionState(err) : OptConnectionState(connectionState);
 }
@@ -65,7 +65,7 @@ OptConnectionState Glasses::GetConnectionState()
 OptFloatParam Glasses::GetGlassesFloatParam(T5_ParamGlasses param)
 {
 	double paramValue;
-	auto err = t5GetGlassesFloatParam(Handle(), 0, param, &paramValue);
+	auto err = t5GetGlassesFloatParam(handle, 0, param, &paramValue);
 
 	return err == T5_SUCCESS ? OptFloatParam(paramValue) : OptFloatParam(err);
 }
@@ -73,7 +73,7 @@ OptFloatParam Glasses::GetGlassesFloatParam(T5_ParamGlasses param)
 OptIntegerParam Glasses::GetGlassesIntegerParam(T5_ParamGlasses param)
 {
 	int64_t paramValue;
-	auto err = t5GetGlassesIntegerParam(Handle(), 0, param, &paramValue);
+	auto err = t5GetGlassesIntegerParam(handle, 0, param, &paramValue);
 
 	return err == T5_SUCCESS ? OptIntegerParam(paramValue) : OptIntegerParam(err);
 }

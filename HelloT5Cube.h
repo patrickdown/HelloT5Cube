@@ -44,8 +44,8 @@ class HelloT5Cube : public GLApp::Application
 	RenderSurface leftEye;
 	RenderSurface rightEye;
 
-	T5W::Context context;
-	T5W::Glasses glasses;
+	Owned<T5W::Context> context;
+	Owned<T5W::Glasses> glasses;
 
 	bool isPreviousPoseValid;
 	bool isPoseValid;

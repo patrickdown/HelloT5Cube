@@ -8,35 +8,35 @@
 
 namespace T5Wrapper {
 
-bool Context::CreateHandle(T5_Context& handle, T5_Result& errorCode, std::string applicationId, std::string version)
+T5_Result Context::Create(std::string applicationId, std::string version)
 {
+	assert(handle == 0);
 	T5_ClientInfo clientInfo;
 	clientInfo.applicationId = applicationId.c_str();
 	clientInfo.applicationVersion = version.c_str();
 
-	errorCode = t5CreateContext(&handle, &clientInfo, nullptr);
-	return errorCode == T5_SUCCESS;
+	return t5CreateContext(&handle, &clientInfo, nullptr);
 }
 
-void Context::DeleteHandle(T5_Context& handle)
+void Context::Delete()
 {
-	t5DestroyContext(&handle);
-	handle = 0;
-	std::cout << "Deleted T5 context" << std::endl;
+	if(handle != 0) {
+		t5DestroyContext(&handle);
+		handle = 0;
+	}
 }
 
 
 
 OptGlassesList Context::GetConnectedGlasses()
 {
-	if(ErrorCode() != T5_SUCCESS)
-		return OptGlassesList((T5_Result)T5_ERROR_NO_CONTEXT);
+	assert(handle != 0);
 
 	size_t bufferSize = GLASSES_BUFFER_SIZE;
 	char glassesListBuffer[GLASSES_BUFFER_SIZE];
 	T5_Result err = WaitForService([this, &glassesListBuffer, &bufferSize] ()
 	{ 
-		return t5ListGlasses(Handle(), glassesListBuffer, &bufferSize); 
+		return t5ListGlasses(handle, glassesListBuffer, &bufferSize); 
 	});
 
 	if (!err)

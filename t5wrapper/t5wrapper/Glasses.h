@@ -14,8 +14,10 @@ namespace T5Wrapper
 	using OptGlassesPose = OptError<T5_GlassesPose>;
 	
 
-	class Glasses : public WrapperWithErrorCode<T5_Glasses, T5_Result, Glasses>
+	class Glasses 
 	{
+		protected:
+		T5_Glasses handle = 0;
 		bool isAcquired = false;
 
 		inline static float DefaultIPD = 59;
@@ -25,9 +27,10 @@ namespace T5Wrapper
 		Glasses(const Glasses&) = default;
 		~Glasses();
 
-		static bool CreateHandle(T5_Glasses& handle, T5_Result& errorCode, Context& context, std::string glassesID);
 
-		static void DeleteHandle(T5_Glasses& handle);
+		T5_Result Create(Context context, std::string glassesID);
+
+		void Delete();
 
 
 		T5_Result Acquire(std::string displayName);

@@ -12,12 +12,17 @@ namespace T5Wrapper
 
 using OptGlassesList = OptError<std::vector<std::string>>;
 
-class Context : public WrapperWithErrorCode<T5_Context, T5_Result, Context>
+class Context 
 {
-	public:
-	static bool CreateHandle(T5_Context& handle, T5_Result& errorCode, std::string applicationId, std::string version);
+	protected:
+	T5_Context handle = 0;
 
-	static void DeleteHandle(T5_Context& handle);
+	public:
+	explicit operator T5_Context() { return handle; }
+	explicit operator bool() { return handle != 0; }
+
+	T5_Result Create(std::string applicationId, std::string version);
+	void Delete();
 
 	OptGlassesList GetConnectedGlasses();
 

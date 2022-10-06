@@ -297,8 +297,8 @@ void HelloT5Cube::SendFramesToGlasses()
 
 		// Currently this is a pointer to the internal texture handle
 		// Also tried casting the handle value to (void*)
-		frameInfo.leftTexHandle = (void*)(*leftEye.texture);
-		frameInfo.rightTexHandle = (void*)(*rightEye.texture);
+		frameInfo.leftTexHandle = leftEye.texture->HandleAsVoidPtr();
+		frameInfo.rightTexHandle = rightEye.texture->HandleAsVoidPtr();
 
 		auto leftPos = leftTransform.InverseTranformPosition(glm::vec3(0,0,0));
 		leftPos = glassesPose.InverseTranformPosition(leftPos);

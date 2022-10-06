@@ -19,7 +19,6 @@ class Context
 
 	public:
 	explicit operator T5_Context() { return handle; }
-	explicit operator bool() { return handle != 0; }
 
 	T5_Result Create(std::string applicationId, std::string version);
 	void Delete();

@@ -9,9 +9,12 @@ namespace GLWrapper {
 		GLuint handle = 0;
 
 		public:
-		explicit operator const GLuint& () { return handle; }
-		explicit operator void*() { return (void*) & handle; }
+		explicit operator GLuint () { return handle; }
 
+		void* HandleAsVoidPtr()
+		{
+			return reinterpret_cast<void*>(static_cast<uintptr_t>(handle));
+		}
 
 		void Create(GLenum target)
 		{

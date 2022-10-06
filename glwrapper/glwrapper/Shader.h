@@ -12,7 +12,7 @@ namespace GLWrapper
 		GLuint handle = 0;
 
 		public:
-		explicit operator const GLuint& () { return handle; }
+		explicit operator GLuint () { return handle; }
 
 		void Delete()
 		{
@@ -32,7 +32,7 @@ namespace GLWrapper
 		std::string errorMsg;
 
 		public:
-		explicit operator const GLuint& () { return handle; }
+		explicit operator GLuint () { return handle; }
 
 		void Delete()
 		{

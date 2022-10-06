@@ -12,7 +12,7 @@ namespace GLWrapper
 
 		public:
 
-		explicit operator const GLuint& () { return handle; }
+		explicit operator GLuint () { return handle; }
 
 		public:
 		void Create()

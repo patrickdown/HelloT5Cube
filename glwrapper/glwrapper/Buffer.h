@@ -2,43 +2,43 @@
 #include <memory>
 #include <vector>
 #include <span>
-#include "GLWrapper.h"
+#include <util/Wrapper.h>
 
 namespace GLWrapper 
 {
 	
-	class Buffer : public GLWrapperBase<Buffer>
+
+	class Buffer 
 	{
-		public:
-
-		static bool CreateHandle(GLuint& handle)
-		{
-			glCreateBuffers(1, &handle);
-			return true;
-		}
-
-		static void DeleteHandle(GLuint& handle)
-		{
-			glDeleteBuffers(1, &handle);
-			handle = 0;
-		}
-
 		protected:
-		size_t elementSize;
+		GLuint handle = 0;
 
 		public:
+
+		explicit operator const GLuint&() { return handle; }
+
+		void Create()
+		{
+			assert(handle == 0);
+			glCreateBuffers(1, &handle);
+		}
+
+		void Delete()
+		{
+			if (handle != 0)
+			{
+				glDeleteBuffers(1, &handle);
+				handle = 0;
+			}
+		}
 
 		template<typename T>
 		void StoreData(std::span<T> vertices, GLbitfield  flags = 0)
 		{
-			elementSize = sizeof(T);
-			glNamedBufferStorage(Handle(), vertices.size_bytes(), vertices.data(), flags);
-		}
-
-		size_t GetElementSize() 
-		{ 
-			return elementSize; 
+			assert(handle != 0);
+			glNamedBufferStorage(handle, vertices.size_bytes(), vertices.data(), flags);
 		}
 	};
+
 
 }

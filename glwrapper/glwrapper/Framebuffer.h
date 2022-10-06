@@ -1,7 +1,7 @@
 #pragma once
 #include <string>
 #include <glad/gl.h>
-#include <glwrapper/GLWrapper.h>
+#include <util/Wrapper.h>
 #include <glwrapper/Texture.h>
 #include <glwrapper/Renderbuffer.h>
 
@@ -9,77 +9,95 @@ namespace GLWrapper
 {
 	
 
-	class Framebuffer : public GLBindingWrapper<Framebuffer>
+	class Framebuffer 
 	{
+		protected:
+		GLuint handle = 0;
+
 		public:
-		static bool CreateHandle(GLuint& handle)
+		explicit operator const GLuint& () { return handle; }
+
+		void Create()
 		{
+			assert(handle == 0);
 			glCreateFramebuffers(1, &handle);
-			return true;
 		}
 
-		static void DeleteHandle(GLuint& handle)
+		void Delete()
 		{
-			glDeleteFramebuffers(1, &handle);
-			handle = 0;
+			if (handle != 0)
+			{
+				glDeleteFramebuffers(1, &handle);
+				handle = 0;
+			}
 		}
 
-		static void BindHandle(GLuint handle, GLenum target)
+		void Bind(GLenum target)
 		{
 			glBindFramebuffer(target, handle);
 		}
 
-		void AttachColor(Texture& texture, int textureLevel = 0, int colorAttachment = 0)
+		void ColorAttachment(Texture texture, int textureLevel = 0, int colorAttachment = 0)
 		{
-			glNamedFramebufferTexture(Handle(), GL_COLOR_ATTACHMENT0 + colorAttachment, texture.Handle(), textureLevel);
+			assert(handle != 0);
+			glNamedFramebufferTexture(handle, GL_COLOR_ATTACHMENT0 + colorAttachment, (GLuint)texture, textureLevel);
 		}
 
-		void AttachColor(Renderbuffer& renderbuffer, int colorAttachment = 0)
+		void ColorAttachment(Renderbuffer renderbuffer, int colorAttachment = 0)
 		{
-			glNamedFramebufferRenderbuffer(Handle(), GL_COLOR_ATTACHMENT0 + colorAttachment, GL_RENDERBUFFER, renderbuffer.Handle());
+			assert(handle != 0);
+			glNamedFramebufferRenderbuffer(handle, GL_COLOR_ATTACHMENT0 + colorAttachment, GL_RENDERBUFFER, (GLuint)renderbuffer);
 		}
 
-		void AttachDepth(Texture& texture, int textureLevel = 0)
+		void DepthAttachment(Texture texture, int textureLevel = 0)
 		{
-			glNamedFramebufferTexture(Handle(), GL_DEPTH_ATTACHMENT, texture.Handle(), textureLevel);
+			assert(handle != 0);
+			glNamedFramebufferTexture(handle, GL_DEPTH_ATTACHMENT, (GLuint)texture, textureLevel);
 		}
 
-		void AttachDepth(Renderbuffer& renderbuffer)
+		void DepthAttachment(Renderbuffer renderbuffer)
 		{
-			glNamedFramebufferRenderbuffer(Handle(), GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, renderbuffer.Handle());
+			assert(handle != 0);
+			glNamedFramebufferRenderbuffer(handle, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, (GLuint)renderbuffer);
 		}
 
-		void AttachStencil(Texture& texture, int textureLevel = 0)
+		void StencilAttachment(Texture texture, int textureLevel = 0)
 		{
-			glNamedFramebufferTexture(Handle(), GL_STENCIL_ATTACHMENT, texture.Handle(), textureLevel);
+			assert(handle != 0);
+			glNamedFramebufferTexture(handle, GL_STENCIL_ATTACHMENT, (GLuint)texture, textureLevel);
+		}
+
+
+		void StencilAttachment(Renderbuffer renderbuffer)
+		{
+			assert(handle != 0);
+			glNamedFramebufferRenderbuffer(handle, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER, (GLuint)renderbuffer);
 		}
 
 		void DrawBuffers(int colorAttachment)
 		{
-			
+			assert(handle != 0);
 			GLenum attach = GL_COLOR_ATTACHMENT0 + colorAttachment;
-			glNamedFramebufferDrawBuffers(Handle(), 1, &attach);
-		}
-
-
-		void AttachStencil(Renderbuffer& renderbuffer)
-		{
-			glNamedFramebufferRenderbuffer(Handle(), GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER, renderbuffer.Handle());
+			glNamedFramebufferDrawBuffers(handle, 1, &attach);
 		}
 
 		void BlitToScreen(GLint srcX0, GLint srcY0, GLint srcX1, GLint srcY1, GLint dstX0, GLint dstY0, GLint dstX1, GLint dstY1, GLbitfield mask, GLenum filter)
 		{
-			glBlitNamedFramebuffer(Handle(), 0, srcX0, srcY0, srcX1, srcY1, dstX0, dstY0, dstX1, dstY1, mask, filter);
+			assert(handle != 0);
+			glBlitNamedFramebuffer(handle, 0, srcX0, srcY0, srcX1, srcY1, dstX0, dstY0, dstX1, dstY1, mask, filter);
 		}
 
 		GLenum CheckStatus()
 		{
-			return glCheckNamedFramebufferStatus(Handle(), GL_FRAMEBUFFER);
+			assert(handle != 0);
+			return glCheckNamedFramebufferStatus(handle, GL_FRAMEBUFFER);
 		}
 
-		bool Ready()
+		bool IsReady()
 		{
-			return CheckStatus() == GL_FRAMEBUFFER_COMPLETE;
+			if(handle != 0)
+				return CheckStatus() == GL_FRAMEBUFFER_COMPLETE;
+			return false;
 		}
 
 		std::string GetErrorMessage();

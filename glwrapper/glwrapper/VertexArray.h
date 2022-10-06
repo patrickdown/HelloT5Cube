@@ -1,5 +1,6 @@
 #pragma once
-#include <glwrapper/GLWrapper.h>
+#include <glad/gl.h>
+#include <util/Wrapper.h>
 
 namespace GLWrapper
 {
@@ -14,29 +15,38 @@ namespace GLWrapper
 		GLuint offset;
 	};
 
-	class VertexArray : public GLBindingWrapper<VertexArray>
+	class VertexArray 
 	{
+		protected:
+		GLuint handle = 0;
+
 		public:
-		static bool CreateHandle(GLuint& handle)
+
+		explicit operator const GLuint& () { return handle; }
+
+		void Create()
 		{
+			assert(handle == 0);
 			glCreateVertexArrays(1, &handle);
-			return true;
 		}
 
-		static void DeleteHandle(GLuint& handle)
+		void Delete()
 		{
-			glDeleteVertexArrays(1, &handle);
-			handle = 0;
+			if (handle != 0)
+			{
+				glDeleteVertexArrays(1, &handle);
+				handle = 0;
+			}
 		}
 
-		static void BindHandle(GLuint handle)
+		void Bind()
 		{
 			glBindVertexArray(handle);
 		}
 
 		public:
 
-		void AttachBuffer(Buffer& buffer, GLuint index, VertexStructMember& desc);
+		void AttachBuffer(Buffer buffer, GLuint index, const VertexStructMember& desc);
 
 	};
 

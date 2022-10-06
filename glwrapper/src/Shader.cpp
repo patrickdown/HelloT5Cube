@@ -1,21 +1,25 @@
 #include <glwrapper/Shader.h>
+#include <util/Wrapper.h>
 
 namespace GLWrapper
 {
 
-	bool Shader::Compile(std::string code)
+	bool Shader::Compile(GLenum shaderType, std::string code)
 	{
+		assert(handle == 0);
+		handle = glCreateShader(shaderType);
 		const char* ptrCode = code.c_str();
-		glShaderSource(Handle(), 1, &ptrCode, NULL);
-		glCompileShader(Handle());
+		glShaderSource(handle, 1, &ptrCode, NULL);
+		glCompileShader(handle);
 
 		return IsValid();
 	}
 
 	bool Shader::IsValid()
 	{
+		assert(handle != 0);
 		int success;
-		glGetShaderiv(Handle(), GL_COMPILE_STATUS, &success);
+		glGetShaderiv(handle, GL_COMPILE_STATUS, &success);
 
 		return success != 0;
 	}
@@ -23,7 +27,7 @@ namespace GLWrapper
 	std::string Shader::GetErrorMessage()
 	{
 		char infoLog[512];
-		glGetShaderInfoLog(Handle(), 512, NULL, infoLog);
+		glGetShaderInfoLog(handle, 512, NULL, infoLog);
 		return std::string("ERROR::SHADER::VERTEX::COMPILATION_FAILED\n") + infoLog;
 	}
 
@@ -31,28 +35,31 @@ namespace GLWrapper
 
 	bool ShaderProgram::Compile(std::string vertexCode, std::string fragmentCode)
 	{
-		auto vertex = Shader::Make(GL_VERTEX_SHADER);
-		if (!vertex.Compile(vertexCode))
+		auto vertex = MakeOwned<Shader>();
+		if (!vertex->Compile(GL_VERTEX_SHADER, vertexCode))
 		{
-			errorMsg = vertex.GetErrorMessage();
+			errorMsg = vertex->GetErrorMessage();
 			return false;
 		}
 
-		auto fragment = Shader::Make(GL_FRAGMENT_SHADER);
-		if (!fragment.Compile(fragmentCode))
+		auto fragment = MakeOwned<Shader>();
+		if (!fragment->Compile(GL_FRAGMENT_SHADER, fragmentCode))
 		{
-			errorMsg = fragment.GetErrorMessage();
+			errorMsg = fragment->GetErrorMessage();
 			return false;
 		}
 
-		glAttachShader(Handle(), vertex.Handle());
-		glAttachShader(Handle(), fragment.Handle());
-		glLinkProgram(Handle());
+		assert(handle == 0);
+		handle = glCreateProgram();
+
+		glAttachShader(handle, (GLuint)*vertex);
+		glAttachShader(handle, (GLuint)*fragment);
+		glLinkProgram(handle);
 
 		if (!IsValid())
 		{
 			char infoLog[512];
-			glGetProgramInfoLog(Handle(), 512, NULL, infoLog);
+			glGetProgramInfoLog(handle, 512, NULL, infoLog);
 			errorMsg = std::string("ERROR::SHADER::PROGRAM::LINKING_FAILED\n") + infoLog;
 			return false;
 		}
@@ -63,7 +70,7 @@ namespace GLWrapper
 	bool ShaderProgram::IsValid()
 	{
 		int success;
-		glGetShaderiv(Handle(), GL_LINK_STATUS, &success);
+		glGetShaderiv(handle, GL_LINK_STATUS, &success);
 
 		return success != 0;
 	}

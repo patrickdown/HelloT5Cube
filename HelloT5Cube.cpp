@@ -22,22 +22,25 @@ bool HelloT5Cube::RenderSurface::Initialize(int width, int height)
 	this->width = width;
 	this->height = height;
 
-	texture = GLW::Texture::Make(GL_TEXTURE_2D);
-	texture.SetTextureStorage(GL_RGBA8, width, height);
-	texture.SetMinFilter(GL_NEAREST);
-	texture.SetMagFilter(GL_NEAREST);
+	texture = MakeOwned<GLW::Texture>();
+	texture->Create(GL_TEXTURE_2D);
+	texture->SetTextureStorage(GL_RGBA8, width, height);
+	texture->SetMinFilter(GL_NEAREST);
+	texture->SetMagFilter(GL_NEAREST);
 
-	depth = GLW::Renderbuffer::Make();
-	depth.SetDepthStorage(width, height);
+	depth = MakeOwned<GLW::Renderbuffer>();
+	depth->Create();
+	depth->SetDepthStorage(width, height);
 
-	framebuffer = GLW::Framebuffer::Make();
-	framebuffer.AttachColor(texture);
-	framebuffer.AttachDepth(depth);
-	framebuffer.DrawBuffers(0);
+	framebuffer = MakeOwned<GLW::Framebuffer>();
+	framebuffer->Create();
+	framebuffer->ColorAttachment(*texture);
+	framebuffer->DepthAttachment(*depth);
+	framebuffer->DrawBuffers(0);
 
-	if (!framebuffer.Ready())
+	if (!framebuffer->IsReady())
 	{ 
-		std::cerr << "leftEyeFramebuffer: " << framebuffer.GetErrorMessage() << std::endl;
+		std::cerr << "leftEyeFramebuffer: " << framebuffer->GetErrorMessage() << std::endl;
 		return false;
 	}
 
@@ -46,7 +49,7 @@ bool HelloT5Cube::RenderSurface::Initialize(int width, int height)
 
 void HelloT5Cube::RenderSurface::BeginDraw()
 {
-	framebuffer.Bind(GL_DRAW_FRAMEBUFFER);
+	framebuffer->Bind(GL_DRAW_FRAMEBUFFER);
 	glViewport(0, 0, width, height);
 }
 
@@ -57,7 +60,7 @@ void HelloT5Cube::RenderSurface::EndDraw()
 
 void HelloT5Cube::RenderSurface::BlitToScreen(int dstWidth, int dstHeight)
 {
-	framebuffer.BlitToScreen(0, 0, width, height, 0, 0, dstWidth, dstHeight, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+	framebuffer->BlitToScreen(0, 0, width, height, 0, 0, dstWidth, dstHeight, GL_COLOR_BUFFER_BIT, GL_NEAREST);
 }
 
 
@@ -67,11 +70,11 @@ bool HelloT5Cube::InitializeContext()
 	if (!InitializeT5())
 		return false;
 
-	cubeShader = GLW::ShaderProgram::Make();
+	cubeShader = MakeOwned<GLW::ShaderProgram>();
 
-	if (!cubeShader.Compile(GetVertexShaderCode(), GetFragmentShaderCode()))
+	if (!cubeShader->Compile(GetVertexShaderCode(), GetFragmentShaderCode()))
 	{
-		std::cerr << cubeShader.GetErrorMessage() << std::endl;
+		std::cerr << cubeShader->GetErrorMessage() << std::endl;
 		return false;
 	}
 
@@ -79,12 +82,14 @@ bool HelloT5Cube::InitializeContext()
 	Setup vertex arrays
 	*****************************************************************************/
 
-	cubeVertexBuffer = GLW::Buffer::Make();
-	cubeVertexBuffer.StoreData(GetCubeVertices());
+	cubeVertexBuffer = MakeOwned<GLW::Buffer>();
+	cubeVertexBuffer->Create();
+	cubeVertexBuffer->StoreData(GetCubeVertices());
 
-	cubeVertexArrays = GLW::VertexArray::Make();
-	cubeVertexArrays.AttachBuffer(cubeVertexBuffer, cubeShader.GetAttribLocation("vPos"), VertexPC::positionMem);
-	cubeVertexArrays.AttachBuffer(cubeVertexBuffer, cubeShader.GetAttribLocation("vCol"), VertexPC::colorMem);
+	cubeVertexArrays = MakeOwned<GLW::VertexArray>();
+	cubeVertexArrays->Create();
+	cubeVertexArrays->AttachBuffer(*cubeVertexBuffer, cubeShader->GetAttribLocation("vPos"), VertexPC::positionMem);
+	cubeVertexArrays->AttachBuffer(*cubeVertexBuffer, cubeShader->GetAttribLocation("vCol"), VertexPC::colorMem);
 
 	/****************************************************************************
 	Setup frame buffers for stereo
@@ -247,18 +252,18 @@ void HelloT5Cube::Render()
 
 	auto headViewModel = glassesPose.GetInverseMatrix() * modelTran.GetMatrix();
 
-	cubeShader.Use();
-	cubeVertexArrays.Bind();
+	cubeShader->Use();
+	cubeVertexArrays->Bind();
 
 	auto mvpLeft = perspectiveProj * leftTransform.GetMatrix() * headViewModel;
-	cubeShader.Set("MVP", mvpLeft);
+	cubeShader->Set("MVP", mvpLeft);
 	leftEye.BeginDraw();
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glDrawArrays(GL_TRIANGLES, 0, 36);
 	leftEye.EndDraw();
 
 	auto mvpRight = perspectiveProj * leftTransform.GetMatrix() * headViewModel;
-	cubeShader.Set("MVP", mvpRight);
+	cubeShader->Set("MVP", mvpRight);
 	rightEye.BeginDraw();
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glDrawArrays(GL_TRIANGLES, 0, 36);
@@ -286,8 +291,8 @@ void HelloT5Cube::SendFramesToGlasses()
 
 		frameInfo.texWidth_PIX = leftEye.width;
 		frameInfo.texHeight_PIX = leftEye.height;
-		frameInfo.leftTexHandle = (void *)&leftEye.texture.Handle();
-		frameInfo.rightTexHandle = (void*)&rightEye.texture.Handle();
+		//frameInfo.leftTexHandle = (void *)&leftEye.texture.Handle();
+		//frameInfo.rightTexHandle = (void*)&rightEye.texture.Handle();
 
 		auto leftPos = leftTransform.InverseTranformPosition(glm::vec3(0,0,0));
 		leftPos = glassesPose.InverseTranformPosition(leftPos);

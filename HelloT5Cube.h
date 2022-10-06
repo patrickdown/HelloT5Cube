@@ -22,9 +22,9 @@ class HelloT5Cube : public GLApp::Application
 		int height;
 		int width;
 
-		GLW::Texture texture;
-		GLW::Renderbuffer depth;
-		GLW::Framebuffer framebuffer;
+		Owned<GLW::Texture> texture;
+		Owned<GLW::Renderbuffer> depth;
+		Owned<GLW::Framebuffer> framebuffer;
 
 		bool Initialize(int height, int width);
 		void BeginDraw();
@@ -37,9 +37,9 @@ class HelloT5Cube : public GLApp::Application
 	int defaultHeight = 768;
 	float defaultFOV = 48.0;
 
-	GLW::ShaderProgram cubeShader;
-	GLW::Buffer cubeVertexBuffer;
-	GLW::VertexArray cubeVertexArrays;
+	Owned<GLW::ShaderProgram> cubeShader;
+	Owned<GLW::Buffer> cubeVertexBuffer;
+	Owned<GLW::VertexArray> cubeVertexArrays;
 
 	RenderSurface leftEye;
 	RenderSurface rightEye;

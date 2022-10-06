@@ -163,7 +163,6 @@ copy $(ProjectDir)glfw-3.3.8.bin.WIN64\lib-vc2022\glfw3.dll $(TargetDir)</Comman
     <ClInclude Include="glapplication\glapplication\Transform.h" />
     <ClInclude Include="glwrapper\glwrapper\Buffer.h" />
     <ClInclude Include="glwrapper\glwrapper\Framebuffer.h" />
-    <ClInclude Include="glwrapper\glwrapper\GLWrapper.h" />
     <ClInclude Include="glwrapper\glwrapper\Renderbuffer.h" />
     <ClInclude Include="glwrapper\glwrapper\Shader.h" />
     <ClInclude Include="glwrapper\glwrapper\Texture.h" />

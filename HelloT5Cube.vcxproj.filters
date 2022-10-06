@@ -86,9 +86,6 @@
     <ClInclude Include="glwrapper\glwrapper\Framebuffer.h">
       <Filter>Header Files\GLWrapper</Filter>
     </ClInclude>
-    <ClInclude Include="glwrapper\glwrapper\GLWrapper.h">
-      <Filter>Header Files\GLWrapper</Filter>
-    </ClInclude>
     <ClInclude Include="glwrapper\glwrapper\Renderbuffer.h">
       <Filter>Header Files\GLWrapper</Filter>
     </ClInclude>

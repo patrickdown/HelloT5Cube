@@ -1,54 +1,66 @@
 #pragma once
-#include <glwrapper/GLWrapper.h>
+#include <util/Wrapper.h>
 
 namespace GLWrapper {
 
-	class Texture : public GLBindingWrapper<Texture>
+	class Texture 
 	{
 		protected:
-		GLenum target;
+		GLuint handle = 0;
 
 		public:
-		static bool CreateHandle(GLuint& handle, GLenum target)
+		explicit operator const GLuint& () { return handle; }
+
+
+		void Create(GLenum target)
 		{
+			assert(handle == 0);
 			glCreateTextures(target, 1, &handle);
-			return true;
 		}
 
-		static void DeleteHandle(GLuint& handle)
+		void Delete()
 		{
-			glDeleteTextures(1, &handle);
-			handle = 0;
+			if (handle != 0)
+			{
+				glDeleteTextures(1, &handle);
+				handle = 0;
+			}
 		}
 
 		static void BindHandle(GLuint handle, GLuint unit)
 		{
+			assert(handle != 0);
 			glBindTextureUnit(unit, handle);
 		}
 
 		void SetWrapS(GLint wrap)
 		{
-			glTextureParameteri(Handle(), GL_TEXTURE_WRAP_S, wrap);
+			assert(handle != 0);
+			glTextureParameteri(handle, GL_TEXTURE_WRAP_S, wrap);
 		}
 
 		void SetWrapT(GLint wrap)
 		{
-			glTextureParameteri(Handle(), GL_TEXTURE_WRAP_T, wrap);
+			assert(handle != 0);
+			glTextureParameteri(handle, GL_TEXTURE_WRAP_T, wrap);
 		}
 
 		void SetMinFilter(GLint filter)
 		{
-			glTextureParameteri(Handle(), GL_TEXTURE_MIN_FILTER, filter);
+			assert(handle != 0);
+			glTextureParameteri(handle, GL_TEXTURE_MIN_FILTER, filter);
 		}
 
 		void SetMagFilter(GLint filter)
 		{
-			glTextureParameteri(Handle(), GL_TEXTURE_MAG_FILTER, filter);
+			assert(handle != 0);
+			glTextureParameteri(handle, GL_TEXTURE_MAG_FILTER, filter);
 		}
 
 		void SetTextureStorage(GLenum internalformat, GLsizei width, GLsizei height, GLsizei levels = 1)
 		{
-			glTextureStorage2D(Handle(), levels, internalformat, width, height);
+			assert(handle != 0);
+			glTextureStorage2D(handle, levels, internalformat, width, height);
 		}
 	};
 

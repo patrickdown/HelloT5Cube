@@ -268,7 +268,7 @@ void HelloT5Cube::Render()
 	glDrawArrays(GL_TRIANGLES, 0, 36);
 	leftEye.EndDraw();
 
-	auto mvpRight = perspectiveProj * leftTransform.GetMatrix() * headViewModel;
+	auto mvpRight = perspectiveProj * rightTransform.GetMatrix() * headViewModel;
 	cubeShader->Set("MVP", mvpRight);
 	rightEye.BeginDraw();
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

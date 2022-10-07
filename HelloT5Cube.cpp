@@ -249,8 +249,8 @@ void HelloT5Cube::Render()
 	const float ratio = leftEye.width / (float)leftEye.height;
 
 	GLApp::Transform modelTran;
-	modelTran.SetEuler(0, (float)glfwGetTime(), 0);
-	modelTran.SetScale(0.2f);
+	modelTran.SetEuler(0, 0, (float)glfwGetTime());
+	modelTran.SetScale(0.1f);
 
 	auto view = glm::translate(glm::mat4x4(1), glm::vec3(0.0f, 0.0f, -4.0f));
 
@@ -290,8 +290,8 @@ void HelloT5Cube::SendFramesToGlasses()
 	{
 		T5_FrameInfo frameInfo;
 
-		frameInfo.vci.startX_VCI = -tan(glm::radians(defaultFOV) * 0.5f);
-		frameInfo.vci.startY_VCI = frameInfo.vci.startX_VCI * leftEye.width / (float)leftEye.height;
+		frameInfo.vci.startY_VCI = -tan(glm::radians(defaultFOV) * 0.5f);
+		frameInfo.vci.startX_VCI = frameInfo.vci.startY_VCI * leftEye.width / (float)leftEye.height;
 		frameInfo.vci.width_VCI = -2.0f * frameInfo.vci.startX_VCI;
 		frameInfo.vci.height_VCI = -2.0f * frameInfo.vci.startY_VCI;
 
@@ -314,7 +314,7 @@ void HelloT5Cube::SendFramesToGlasses()
 
 		frameInfo.posRVC_GBD = T5W::toT5(rightPos);
 		frameInfo.rotToRVC_GBD = T5W::toT5(glm::inverse(glassesPose.GetOrientation()));
-		frameInfo.isUpsideDown = true;
+		frameInfo.isUpsideDown = false;
 		frameInfo.isSrgb = false;
 
 		result = glasses->SendFrameToGlasses(frameInfo);

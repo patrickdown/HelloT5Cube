@@ -56,9 +56,10 @@ bool Application::BindOpenGL()
 }
 
 
-static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
+void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
 	auto application = static_cast<Application*>(glfwGetWindowUserPointer(window));
+	application->OnKey(key, scancode, action, mods);
 }
 
 void Application::OnKey(int key, int scancode, int action, int mods)

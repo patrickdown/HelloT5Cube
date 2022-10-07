@@ -14,6 +14,8 @@ bool HelloT5Cube::InitializeApplication()
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
+	std::cout << "Press P to dump pose." << std::endl;
+
 	return true;
 }
 
@@ -109,6 +111,14 @@ bool HelloT5Cube::InitializeContext()
 
 	return true;
 }
+
+void HelloT5Cube::OnKey(int key, int scancode, int action, int mods)
+{
+	Application::OnKey(key, scancode, action, mods);
+	if (key == GLFW_KEY_P && action == GLFW_PRESS)
+		isOutputingOnePoseFrame = true;
+}
+
 
 bool HelloT5Cube::InitializeT5()
 {
@@ -225,10 +235,23 @@ void HelloT5Cube::UpdateGlassesPose()
 	T5_GlassesPose pose;
 	if (poseResult.TryGet(pose))
 	{
-		glassesPose.SetPosition(T5W::toGLM(pose.posGLS_GBD));
-		glassesPose.SetOrientation(glm::inverse(T5W::toGLM(pose.rotToGLS_GBD)));
+		auto position = T5W::toGLM(pose.posGLS_GBD);
+		auto orientation = T5W::toGLM(pose.rotToGLS_GBD);
+
+		glassesPose.SetPosition(position);
+		glassesPose.SetOrientation(glm::inverse(orientation));
 		auto pos = glassesPose.GetPosition();
 		isPoseValid = true;
+
+		auto angles = glm::eulerAngles(orientation);
+
+		if (isOutputingOnePoseFrame)
+		{
+			std::cout << "Pos  = (" << position.x << "," << position.y << "," << position.z << ")" << std::endl;
+			std::cout << "Rot = (" << glm::degrees(angles.x) << "," << glm::degrees(angles.y) << "," << glm::degrees(angles.z) << ")" << std::endl;
+			isOutputingOnePoseFrame = false;
+		}
+
 	}
 	else
 	{

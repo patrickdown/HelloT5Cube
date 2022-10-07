@@ -59,12 +59,16 @@ class HelloT5Cube : public GLApp::Application
 	bool isPreviousFrameSent;
 	bool isFrameSent;
 
+	bool isOutputingOnePoseFrame = false;
+
 	int frameCounter = 0;
 
 	std::string serviceVersion;
 
 	bool InitializeApplication() override;
 	bool InitializeContext() override;
+	void OnKey(int key, int scancode, int action, int mods) override;
+
 
 	void Update() override;
 	void UpdateGlassesPose();

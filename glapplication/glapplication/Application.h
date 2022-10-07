@@ -8,8 +8,12 @@
 namespace GLApplication
 { 
 
+void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
+
+
 class Application
 {
+
 	protected:
 	bool glfwIsInitialized = false;
 	GLFWwindow* glfwWindow{nullptr};
@@ -20,7 +24,6 @@ class Application
 	void SetWindowSize(int width, int height);
 	void SetWindowTitle(std::string title);
 	void GetFramebufferSize(int& width, int& height);
-
 
 	virtual void OnKey(int key, int scancode, int action, int mods);
 	virtual bool BindOpenGL();
@@ -36,6 +39,7 @@ class Application
 	bool Initialize();
 	void Run();
 	
+	friend void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 };
 
 }

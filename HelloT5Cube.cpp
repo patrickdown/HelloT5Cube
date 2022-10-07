@@ -123,6 +123,9 @@ bool HelloT5Cube::InitializeT5()
 		return false;
 	}
 
+	serviceVersion = context->GetServiceVersion();
+	std::cout << "Service version: " << serviceVersion << std::endl;
+
 	auto glassesResult = context->GetConnectedGlasses();
 
 	if (!glassesResult.TryGet(glassesIDList))
@@ -287,7 +290,7 @@ void HelloT5Cube::SendFramesToGlasses()
 	{
 		T5_FrameInfo frameInfo;
 
-		frameInfo.vci.startX_VCI = tan(glm::radians(defaultFOV) * 0.5f);
+		frameInfo.vci.startX_VCI = -tan(glm::radians(defaultFOV) * 0.5f);
 		frameInfo.vci.startY_VCI = frameInfo.vci.startX_VCI * leftEye.width / (float)leftEye.height;
 		frameInfo.vci.width_VCI = -2.0f * frameInfo.vci.startX_VCI;
 		frameInfo.vci.height_VCI = -2.0f * frameInfo.vci.startY_VCI;
@@ -311,7 +314,7 @@ void HelloT5Cube::SendFramesToGlasses()
 
 		frameInfo.posRVC_GBD = T5W::toT5(rightPos);
 		frameInfo.rotToRVC_GBD = T5W::toT5(glm::inverse(glassesPose.GetOrientation()));
-		frameInfo.isUpsideDown = false;
+		frameInfo.isUpsideDown = true;
 		frameInfo.isSrgb = false;
 
 		result = glasses->SendFrameToGlasses(frameInfo);
@@ -325,5 +328,8 @@ void HelloT5Cube::SendFramesToGlasses()
 		{
 			std::cerr << "Started sending frames" << std::endl;
 		}
+
+		frameCounter++;
+
 	}
 }

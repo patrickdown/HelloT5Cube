@@ -59,6 +59,9 @@ class HelloT5Cube : public GLApp::Application
 	bool isPreviousFrameSent;
 	bool isFrameSent;
 
+	int frameCounter = 0;
+
+	std::string serviceVersion;
 
 	bool InitializeApplication() override;
 	bool InitializeContext() override;

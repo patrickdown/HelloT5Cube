@@ -24,6 +24,8 @@ class Context
 	void Delete();
 
 	OptGlassesList GetConnectedGlasses();
+	std::string GetServiceVersion();
+
 
 	private:
 	int maxRetryCount = 4;

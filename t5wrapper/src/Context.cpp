@@ -75,6 +75,19 @@ OptGlassesList Context::GetConnectedGlasses()
 	return OptGlassesList(err);
 }
 
+std::string Context::GetServiceVersion()
+{
+	char versionBuffer[40];
+	size_t bufferSize = sizeof(versionBuffer);
+	T5_Result err = WaitForService([this, &versionBuffer, &bufferSize]()
+	{
+		return t5GetSystemUtf8Param(handle, kT5_ParamSys_UTF8_Service_Version, versionBuffer, &bufferSize);
+	});
+
+	return err == T5_SUCCESS ? versionBuffer : std::string();
+}
+
+
 T5_Result Context::WaitForService(std::function<T5_Result()> func)
 {
 	T5_Result err;
@@ -99,6 +112,7 @@ T5_Result Context::WaitForService(std::function<T5_Result()> func)
 	}
 	return err;
 }
+
 
 }
 

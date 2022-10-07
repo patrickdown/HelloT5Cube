@@ -298,8 +298,6 @@ void HelloT5Cube::SendFramesToGlasses()
 		frameInfo.texWidth_PIX = leftEye.width;
 		frameInfo.texHeight_PIX = leftEye.height;
 
-		// Currently this is a pointer to the internal texture handle
-		// Also tried casting the handle value to (void*)
 		frameInfo.leftTexHandle = leftEye.texture->HandleAsVoidPtr();
 		frameInfo.rightTexHandle = rightEye.texture->HandleAsVoidPtr();
 

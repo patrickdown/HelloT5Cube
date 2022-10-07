@@ -9,7 +9,7 @@ Hello T5 Cube is a small OpenGL project to demonstrate using the [Tilt Five](htt
 - ✅ Initialize the the T5 system and acquire glasses for rendering. 🙁 Requires double initialization hack to initialize the T5 graphics.
 - ✅ Reading poses from the glasses
 - ✅ Translating pose into view matrix for each eye. Seems to be working right. It's hard to tell until sending frames to the glasses works.
-- ❌ Sending textures to the glasses to be projected. The code is there but not working. 
+- ✅ Sending textures to the glasses to be projected. 
 
 ## Build
 
@@ -29,12 +29,6 @@ Currently only Windows is supported. There is a Visual Studio solution for VS 20
 - **GLApplication** A lightweight wrapper around GLFW for window setup, rendering, and teardown *see README in the directory*
 
 ## TODO
-
-- Fix sending frames to the glasses. `t5SendFrameToGlasses` returns `T5_SUCCESS` but nothing is displayed on the glasses and the console is displaying error messages like this:
-
-        [25272:hmd/client/gl/gl_texture_splitter.cpp:240] error kicking off packet prep: invalid operation
-        [10940:.\hmd/client/frame_sender.h:437] error encoding framebuffer data packet header: invalid argument
-        [10940:.\hmd/client/frame_sender.h:321] error sending frame data: invalid argument
 
 - Currently in main.cpp the application is started twice. The first one will fail in `t5InitGlassesGraphicsContext` and the second start will succeed. When the T5 1.3 API comes out this should no longer be necessary. 
 - Change build to CMake to allow porting to linux

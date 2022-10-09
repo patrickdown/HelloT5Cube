@@ -86,9 +86,6 @@
     <ClInclude Include="glwrapper\glwrapper\Framebuffer.h">
       <Filter>Header Files\GLWrapper</Filter>
     </ClInclude>
-    <ClInclude Include="glwrapper\glwrapper\GLWrapper.h">
-      <Filter>Header Files\GLWrapper</Filter>
-    </ClInclude>
     <ClInclude Include="glwrapper\glwrapper\Renderbuffer.h">
       <Filter>Header Files\GLWrapper</Filter>
     </ClInclude>
@@ -121,6 +118,9 @@
     </ClInclude>
     <ClInclude Include="glapplication\glapplication\Transform.h">
       <Filter>Header Files\GLApplication</Filter>
+    </ClInclude>
+    <ClInclude Include="util\util\ChangeDetector.h">
+      <Filter>Header Files\Util</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

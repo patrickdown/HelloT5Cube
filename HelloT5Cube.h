@@ -1,6 +1,5 @@
 #pragma once
 #include <glapplication/Application.h>
-
 #include <glwrapper/Shader.h>
 #include <glwrapper/Buffer.h>
 #include <glwrapper/VertexArray.h>
@@ -14,8 +13,14 @@ namespace GLW = GLWrapper;
 namespace T5W = T5Wrapper;
 namespace GLApp = GLApplication;
 
+/****************************************************************************
+Main application class
+*****************************************************************************/
 class HelloT5Cube : public GLApp::Application
 {
+	/****************************************************************************
+	Holds framebuffer data for the two stereo images
+	*****************************************************************************/
 	struct DisplaySurface
 	{
 		int height;
@@ -32,49 +37,54 @@ class HelloT5Cube : public GLApp::Application
 		void BlitToScreen(int dstHeight, int dstWidth);
 	};
 
+	// Are these the right defaults? Values were pull from other
+	// source references
 	int defaultWidth = 1216;
 	int defaultHeight = 768;
 	float defaultFOV = 48.0;
 
+	// program and vertex buffers for rendering
 	Owned<GLW::ShaderProgram> cubeShader;
 	Owned<GLW::Buffer> cubeVertexBuffer;
 	Owned<GLW::VertexArray> cubeVertexArrays;
 
+	// Frame buffers for left and right eye
 	DisplaySurface leftEyeDisplay;
 	DisplaySurface rightEyeDisplay;
 
+	// T5 handles
 	Owned<T5W::Context> context;
 	Owned<T5W::Glasses> glasses;
 
-	ChangeDetector<bool> isPoseValid;
-
+	// All the poses neeed to make up the view matrix
 	GLApp::Transform gameboardPose;
 	GLApp::Transform headPose; // Relative to game board pose
 	GLApp::Transform leftEyePose; // Relative to head pose
 	GLApp::Transform rightEyePose; // Relative to head pose
 
+	// List of glasses ID we got from the T5 API
 	std::vector<std::string> glassesIDList;
+	// Version number form the T5 service
+	std::string serviceVersion;
 
+	// Misc
+	ChangeDetector<bool> isPoseValid;
 	ChangeDetector<bool> isFrameSent;
 
 	bool isOutputingOnePoseFrame = false;
-
 	int frameCounter = 0;
 
-	std::string serviceVersion;
-
+	// overrides from GLApp::Application
 	bool InitializeApplication() override;
 	bool InitializeContext() override;
 	void OnKey(int key, int scancode, int action, int mods) override;
-
-
 	void Update() override;
-	void UpdateGlassesPose();
-	void Render();
 
 	bool InitializeT5();
 	bool ConnectGlasses(std::string glassesID);
 
+	void UpdateGlassesPose();
+	void Render();
 	void SendFramesToGlasses();
 
 	public:

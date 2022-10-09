@@ -74,7 +74,7 @@
     <IncludePath>$(ProjectDir)glad\OpenGL_4_6_Core\include;$(ProjectDir)glfw-3.3.8.bin.WIN64\include;$(ProjectDir)TiltFive\include\include;$(ProjectDir)glm;$(ProjectDir)glwrapper;$(ProjectDir)util;$(ProjectDir)t5wrapper;$(ProjectDir)glapplication;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>$(ProjectDir)Native\include\include;$(ProjectDir)glad\OpenGL_3_3_Core\include;$(ProjectDir)glfw-3.3.8.bin.WIN64\include;$(ProjectDir)glm;$(ProjectDir)glwrapper;$(ProjectDir)util;$(ProjectDir)t5wrapper;$(ProjectDir)glapplication;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)glad\OpenGL_4_6_Core\include;$(ProjectDir)glfw-3.3.8.bin.WIN64\include;$(ProjectDir)TiltFive\include\include;$(ProjectDir)glm;$(ProjectDir)glwrapper;$(ProjectDir)util;$(ProjectDir)t5wrapper;$(ProjectDir)glapplication;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -130,16 +130,17 @@ copy $(ProjectDir)glfw-3.3.8.bin.WIN64\lib-vc2022\glfw3.dll $(TargetDir)</Comman
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>$(ProjectDir)glfw-3.3.8.bin.WIN64\lib-vc2022\glfw3dll.lib;$(ProjectDir)Native\lib\win64\TiltFiveNative.dll.if.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>$(ProjectDir)glfw-3.3.8.bin.WIN64\lib-vc2022\glfw3dll.lib;$(ProjectDir)TiltFive\lib\win64\TiltFiveNative.dll.if.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>copy $(ProjectDir)Native\lib\win64\TiltFiveNative.dll $(TargetDir)
+      <Command>copy $(ProjectDir)TiltFive\lib\win64\TiltFiveNative.dll $(TargetDir)
 copy $(ProjectDir)glfw-3.3.8.bin.WIN64\lib-vc2022\glfw3.dll $(TargetDir)</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -162,7 +163,6 @@ copy $(ProjectDir)glfw-3.3.8.bin.WIN64\lib-vc2022\glfw3.dll $(TargetDir)</Comman
     <ClInclude Include="glapplication\glapplication\Transform.h" />
     <ClInclude Include="glwrapper\glwrapper\Buffer.h" />
     <ClInclude Include="glwrapper\glwrapper\Framebuffer.h" />
-    <ClInclude Include="glwrapper\glwrapper\GLWrapper.h" />
     <ClInclude Include="glwrapper\glwrapper\Renderbuffer.h" />
     <ClInclude Include="glwrapper\glwrapper\Shader.h" />
     <ClInclude Include="glwrapper\glwrapper\Texture.h" />
@@ -172,6 +172,7 @@ copy $(ProjectDir)glfw-3.3.8.bin.WIN64\lib-vc2022\glfw3.dll $(TargetDir)</Comman
     <ClInclude Include="t5wrapper\t5wrapper\Conversions.h" />
     <ClInclude Include="t5wrapper\t5wrapper\Glasses.h" />
     <ClInclude Include="t5wrapper\t5wrapper\OptError.h" />
+    <ClInclude Include="util\util\ChangeDetector.h" />
     <ClInclude Include="util\util\Wrapper.h" />
     <ClInclude Include="VertexDefinition.h" />
   </ItemGroup>

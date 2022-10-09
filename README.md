@@ -27,4 +27,4 @@ Currently only Windows is supported. There is a Visual Studio solution for VS 20
 ## Notes
 
 For reference it might be helpful to see how the t5 coordinate system is set up.
-![T5 coordinate system](https://github.com/patrickdown/HelloT5Cube/master/images/T5GameboardCoordSystem.jpg)
+![T5 coordinate system](./images/T5GameboardCoordSystem.jpg)

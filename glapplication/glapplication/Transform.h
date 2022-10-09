@@ -2,6 +2,8 @@
 #include <glm/glm.hpp>
 #include <glm/ext.hpp>
 #include <glm/gtx/quaternion.hpp>
+#include <glm/gtx/transform.hpp>
+
 
 namespace GLApplication 
 {
@@ -81,27 +83,36 @@ namespace GLApplication
 			return *this;
 		}
 
-		glm::mat4 GetMatrix()
+		glm::vec3 TransformPointToLocalFrame(glm::vec3 const& point)
 		{
-			auto localMat = glm::translate(glm::mat4(1), position);
-			localMat = localMat * glm::mat4_cast(orientation);
-			localMat = glm::scale(localMat, scale);
+			auto localPt = point - position;
+			localPt = localPt / scale;
+			localPt = glm::rotate(orientation, localPt);
+			return localPt;
+		}
 
+		glm::vec3 TransformPointToParentFrame(glm::vec3 const& point)
+		{
+			auto parentPt = glm::rotate(glm::inverse(orientation), point);
+			parentPt = parentPt * scale;
+			parentPt = position + parentPt;
+			return parentPt;
+		}
+
+		glm::mat4 MatrixToLocalFrame()
+		{
+			auto localMat = glm::translate(-position);
+			localMat = glm::scale(1.0f/scale) * localMat;
+			localMat = glm::mat4_cast(orientation) * localMat;
 			return localMat;
 		}
 
-		glm::mat4 GetInverseMatrix()
+		glm::mat4 MatrixToParentFrame()
 		{
-			return glm::inverse(GetMatrix());
-		}
-
-		glm::vec3 InverseTranformPosition(glm::vec3 const& point)
-		{
-			auto rtn = point/scale;
-			auto invRot = glm::inverse(orientation);
-			rtn = glm::rotate(invRot, rtn);
-			return position - rtn;
-
+			auto parentMat = glm::mat4_cast(glm::inverse(orientation));
+			parentMat = glm::scale( scale) * parentMat;
+			parentMat = glm::translate(position) * parentMat;
+			return parentMat;
 		}
 	};
 

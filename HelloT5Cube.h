@@ -8,16 +8,15 @@
 #include <t5wrapper/Context.h>
 #include <t5wrapper/Glasses.h>
 #include <glapplication/Transform.h>
-
+#include <util/ChangeDetector.h>
 
 namespace GLW = GLWrapper;
 namespace T5W = T5Wrapper;
 namespace GLApp = GLApplication;
 
-
 class HelloT5Cube : public GLApp::Application
 {
-	struct RenderSurface
+	struct DisplaySurface
 	{
 		int height;
 		int width;
@@ -41,23 +40,22 @@ class HelloT5Cube : public GLApp::Application
 	Owned<GLW::Buffer> cubeVertexBuffer;
 	Owned<GLW::VertexArray> cubeVertexArrays;
 
-	RenderSurface leftEye;
-	RenderSurface rightEye;
+	DisplaySurface leftEyeDisplay;
+	DisplaySurface rightEyeDisplay;
 
 	Owned<T5W::Context> context;
 	Owned<T5W::Glasses> glasses;
 
-	bool isPreviousPoseValid;
-	bool isPoseValid;
+	ChangeDetector<bool> isPoseValid;
 
-	GLApp::Transform glassesPose;
-	GLApp::Transform leftTransform;
-	GLApp::Transform rightTransform;
+	GLApp::Transform gameboardPose;
+	GLApp::Transform headPose; // Relative to game board pose
+	GLApp::Transform leftEyePose; // Relative to head pose
+	GLApp::Transform rightEyePose; // Relative to head pose
 
 	std::vector<std::string> glassesIDList;
 
-	bool isPreviousFrameSent;
-	bool isFrameSent;
+	ChangeDetector<bool> isFrameSent;
 
 	bool isOutputingOnePoseFrame = false;
 

@@ -8,6 +8,8 @@ std::span<const VertexPC> GetCubeVertices();
 const char* GetVertexShaderCode();
 const char* GetFragmentShaderCode();
 
+
+
 bool HelloT5Cube::InitializeApplication()
 {
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
@@ -19,7 +21,7 @@ bool HelloT5Cube::InitializeApplication()
 	return true;
 }
 
-bool HelloT5Cube::RenderSurface::Initialize(int width, int height)
+bool HelloT5Cube::DisplaySurface::Initialize(int width, int height)
 {
 	this->width = width;
 	this->height = height;
@@ -49,18 +51,18 @@ bool HelloT5Cube::RenderSurface::Initialize(int width, int height)
 	return true;
 }
 
-void HelloT5Cube::RenderSurface::BeginDraw()
+void HelloT5Cube::DisplaySurface::BeginDraw()
 {
 	framebuffer->Bind(GL_DRAW_FRAMEBUFFER);
 	glViewport(0, 0, width, height);
 }
 
-void HelloT5Cube::RenderSurface::EndDraw()
+void HelloT5Cube::DisplaySurface::EndDraw()
 {
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
 }
 
-void HelloT5Cube::RenderSurface::BlitToScreen(int dstWidth, int dstHeight)
+void HelloT5Cube::DisplaySurface::BlitToScreen(int dstWidth, int dstHeight)
 {
 	framebuffer->BlitToScreen(0, 0, width, height, 0, 0, dstWidth, dstHeight, GL_COLOR_BUFFER_BIT, GL_NEAREST);
 }
@@ -71,6 +73,10 @@ bool HelloT5Cube::InitializeContext()
 {
 	if (!InitializeT5())
 		return false;
+
+	/****************************************************************************
+	Compile shaders
+	*****************************************************************************/
 
 	cubeShader = MakeOwned<GLW::ShaderProgram>();
 
@@ -97,14 +103,13 @@ bool HelloT5Cube::InitializeContext()
 	Setup frame buffers for stereo
 	*****************************************************************************/
 
-
-	leftEye.Initialize(defaultWidth, defaultHeight);
-	rightEye.Initialize(defaultWidth, defaultHeight);
+	leftEyeDisplay.Initialize(defaultWidth, defaultHeight);
+	rightEyeDisplay.Initialize(defaultWidth, defaultHeight);
 
 	float ipd = glasses->GetIpd();
 
-	leftTransform.SetPosition(-ipd / 2.0f,0,0);
-	rightTransform.SetPosition(ipd / 2.0f,0,0);
+	leftEyePose.SetPosition(ipd / 2.0f,0,0);
+	rightEyePose.SetPosition(-ipd / 2.0f,0,0);
 
 	glEnable(GL_CULL_FACE);
 	glEnable(GL_DEPTH_TEST);
@@ -159,13 +164,6 @@ bool HelloT5Cube::InitializeT5()
 		std::cout << "Didn't find any glasses" << std::endl;
 		return false;
 	}
-
-	isPreviousPoseValid = false;
-	isPoseValid = false;
-
-	isPreviousFrameSent = false;
-	isFrameSent = false;
-
 
 	return true;
 }
@@ -228,129 +226,134 @@ void HelloT5Cube::Update()
 
 void HelloT5Cube::UpdateGlassesPose()
 {
-	isPreviousPoseValid = isPoseValid;
-
 	auto poseResult = glasses->GetGlassesPose();
 
 	T5_GlassesPose pose;
 	if (poseResult.TryGet(pose))
 	{
+		isPoseValid = true;
+
 		auto position = T5W::toGLM(pose.posGLS_GBD);
 		auto orientation = T5W::toGLM(pose.rotToGLS_GBD);
 
-		glassesPose.SetPosition(position);
-		glassesPose.SetOrientation(glm::inverse(orientation));
-		auto pos = glassesPose.GetPosition();
-		isPoseValid = true;
-
-		auto angles = glm::eulerAngles(orientation);
+		headPose.SetPosition(position);
+		headPose.SetOrientation(orientation);
 
 		if (isOutputingOnePoseFrame)
 		{
-			std::cout << "Pos  = (" << position.x << "," << position.y << "," << position.z << ")" << std::endl;
-			std::cout << "Rot = (" << glm::degrees(angles.x) << "," << glm::degrees(angles.y) << "," << glm::degrees(angles.z) << ")" << std::endl;
+			auto xAxis = glm::rotate(orientation, glm::vec3(1, 0, 0));
+			auto yAxis = glm::rotate(orientation, glm::vec3(0, 1, 0));
+			auto zAxis = glm::rotate(orientation, glm::vec3(0, 0, 1));
+
+			std::cout << "Pos  = (" << position.x << ", " << position.y << ", " << position.z << ")" << std::endl;
+			std::cout << "xAxis =  (" << xAxis.x << ", " << xAxis.y << ", " << xAxis.z << ")" << std::endl;
+			std::cout << "yAxis =  (" << yAxis.x << ", " << yAxis.y << ", " << yAxis.z << ")" << std::endl;
+			std::cout << "zAxis =  (" << zAxis.x << ", " << zAxis.y << ", " << zAxis.z << ")" << std::endl;
+
 			isOutputingOnePoseFrame = false;
 		}
-
 	}
 	else
 	{
 		isPoseValid = false;
 	}
-	if (!isPoseValid && isPreviousPoseValid)
+	if (isPoseValid.IsChanged())
 	{
-		std::cout << "Lost tracking" << std::endl;
-	}
-	else if (isPoseValid && !isPreviousPoseValid)
-	{
-		std::cout << "Gained tracking" << std::endl;
-	}
+		std::cout << (isPoseValid ? "Gained tracking" : "Lost tracking") << std::endl;
+	} 
 }
 
 void HelloT5Cube::Render()
 {
-	const float ratio = leftEye.width / (float)leftEye.height;
+	const float ratio = leftEyeDisplay.width / (float)leftEyeDisplay.height;
 
+	// Rotate cube
 	GLApp::Transform modelTran;
 	modelTran.SetEuler(0, 0, (float)glfwGetTime());
 	modelTran.SetScale(0.1f);
 
-	auto view = glm::translate(glm::mat4x4(1), glm::vec3(0.0f, 0.0f, -4.0f));
-
+	// Model to world
+	auto modelMat = modelTran.MatrixToParentFrame();
+	// World to eye
+	auto viewLeftMat = leftEyePose.MatrixToLocalFrame() * headPose.MatrixToLocalFrame() * gameboardPose.MatrixToLocalFrame();
+	auto viewRightMat = rightEyePose.MatrixToLocalFrame() * headPose.MatrixToLocalFrame() * gameboardPose.MatrixToLocalFrame();
+	// Perspective projection
 	auto perspectiveProj = glm::perspective(glm::radians(defaultFOV), ratio, 0.1f, 100.0f);
-
-	auto headViewModel = glassesPose.GetInverseMatrix() * modelTran.GetMatrix();
 
 	cubeShader->Use();
 	cubeVertexArrays->Bind();
 
-	auto mvpLeft = perspectiveProj * leftTransform.GetMatrix() * headViewModel;
+	// Render left eye
+	auto mvpLeft = perspectiveProj * viewLeftMat * modelMat;
+
 	cubeShader->Set("MVP", mvpLeft);
-	leftEye.BeginDraw();
+	leftEyeDisplay.BeginDraw();
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glDrawArrays(GL_TRIANGLES, 0, 36);
-	leftEye.EndDraw();
+	leftEyeDisplay.EndDraw();
 
-	auto mvpRight = perspectiveProj * rightTransform.GetMatrix() * headViewModel;
+	// Render left eye
+	auto mvpRight = perspectiveProj * viewRightMat * modelMat;
+
 	cubeShader->Set("MVP", mvpRight);
-	rightEye.BeginDraw();
+	rightEyeDisplay.BeginDraw();
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glDrawArrays(GL_TRIANGLES, 0, 36);
-	rightEye.EndDraw();
+	rightEyeDisplay.EndDraw();
 
+	// Blit right eye to display
 	int width = 0;
 	int height = 0;
 	GetFramebufferSize(width, height);
-	rightEye.BlitToScreen(width, height);
+	rightEyeDisplay.BlitToScreen(width, height);
 }
 
 void HelloT5Cube::SendFramesToGlasses()
 {
-	isPreviousFrameSent = isFrameSent;
-	isFrameSent = false;
 	T5_Result result;
 	if (isPoseValid)
 	{
 		T5_FrameInfo frameInfo;
 
 		frameInfo.vci.startY_VCI = -tan(glm::radians(defaultFOV) * 0.5f);
-		frameInfo.vci.startX_VCI = frameInfo.vci.startY_VCI * leftEye.width / (float)leftEye.height;
+		frameInfo.vci.startX_VCI = frameInfo.vci.startY_VCI * leftEyeDisplay.width / (float)leftEyeDisplay.height;
 		frameInfo.vci.width_VCI = -2.0f * frameInfo.vci.startX_VCI;
 		frameInfo.vci.height_VCI = -2.0f * frameInfo.vci.startY_VCI;
 
-		frameInfo.texWidth_PIX = leftEye.width;
-		frameInfo.texHeight_PIX = leftEye.height;
+		frameInfo.texWidth_PIX = leftEyeDisplay.width;
+		frameInfo.texHeight_PIX = leftEyeDisplay.height;
 
-		frameInfo.leftTexHandle = leftEye.texture->HandleAsVoidPtr();
-		frameInfo.rightTexHandle = rightEye.texture->HandleAsVoidPtr();
+		frameInfo.leftTexHandle = leftEyeDisplay.texture->HandleAsVoidPtr();
+		frameInfo.rightTexHandle = rightEyeDisplay.texture->HandleAsVoidPtr();
 
-		auto leftPos = leftTransform.InverseTranformPosition(glm::vec3(0,0,0));
-		leftPos = glassesPose.InverseTranformPosition(leftPos);
+		auto leftPos = leftEyePose.TransformPointToParentFrame(glm::vec3(0,0,0));
+		leftPos = headPose.TransformPointToParentFrame(leftPos);
 
 		frameInfo.posLVC_GBD = T5W::toT5(leftPos);
-		frameInfo.rotToLVC_GBD = T5W::toT5(glm::inverse(glassesPose.GetOrientation()));
+		frameInfo.rotToLVC_GBD = T5W::toT5(headPose.GetOrientation());
 
-		auto rightPos = rightTransform.InverseTranformPosition(glm::vec3(0, 0, 0));
-		rightPos = glassesPose.InverseTranformPosition(rightPos);
+		auto rightPos = rightEyePose.TransformPointToParentFrame(glm::vec3(0, 0, 0));
+		rightPos = headPose.TransformPointToParentFrame(rightPos);
 
 		frameInfo.posRVC_GBD = T5W::toT5(rightPos);
-		frameInfo.rotToRVC_GBD = T5W::toT5(glm::inverse(glassesPose.GetOrientation()));
+		frameInfo.rotToRVC_GBD = T5W::toT5(headPose.GetOrientation());
 		frameInfo.isUpsideDown = false;
 		frameInfo.isSrgb = false;
 
 		result = glasses->SendFrameToGlasses(frameInfo);
 		isFrameSent = (result == T5_SUCCESS);
 
-		if (!isFrameSent && isPreviousFrameSent)
-		{
-			std::cerr << "Stopped sending frames because: " << t5GetResultMessage(result) << std::endl;
+		if (isFrameSent.IsChanged())
+		{ 
+			if(!isFrameSent)
+			{
+				std::cerr << "Stopped sending frames because: " << t5GetResultMessage(result) << std::endl;
+			}
+			else 
+			{
+				std::cerr << "Started sending frames" << std::endl;
+			}
 		}
-		else if (isFrameSent && !isPreviousFrameSent)
-		{
-			std::cerr << "Started sending frames" << std::endl;
-		}
-
 		frameCounter++;
-
 	}
 }

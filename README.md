@@ -8,8 +8,7 @@ Currently only Windows is supported. There is a Visual Studio solution for VS 20
 
 ## Dependencies
 
-- **OpenGL 4.6** *See TODO*
-- **C++20** *See TODO*
+- **OpenGL 4.6** 
 - [**glad2**](https://github.com/Dav1dde/glad/tree/glad2) OpenGL loading   
 - [**GLFW**](https://www.glfw.org/) Window management and OpenGL context creation
 - [**GLM**](https://github.com/g-truc/glm) Math library
@@ -27,4 +26,4 @@ Currently only Windows is supported. There is a Visual Studio solution for VS 20
 ## Notes
 
 For reference it might be helpful to see how the t5 coordinate system is set up.
-![T5 coordinate system](https://github.com/patrickdown/HelloT5Cube/images/T5GameboardCoordSystem.jpg)
+![T5 coordinate system](./images/T5GameboardCoordSystem.jpg)

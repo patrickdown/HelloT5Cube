@@ -3,16 +3,12 @@
 
 int main(void)
 {
+	bool isSuccessfulFirstLaunch = false;
 	{
 		HelloT5Cube hello(1216, 768,"Hello T5 Cube");
 
-		if(hello.Initialize())
-			hello.Run();
-	}
-	{
-		HelloT5Cube hello(1216, 768, "Hello T5 Cube");
-
-		if (hello.Initialize())
+		isSuccessfulFirstLaunch = hello.Initialize();
+		if(isSuccessfulFirstLaunch)
 			hello.Run();
 	}
 }

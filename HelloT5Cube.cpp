@@ -239,7 +239,13 @@ bool HelloT5Cube::ConnectGlasses(std::string glassesID)
 	if (err != T5_SUCCESS)
 	{
 		std::cerr << "Error: [" << t5GetResultMessage(err) << "] initializing OpenGL for glasses " << glassesID << std::endl;
-		return false;
+		glfwMakeContextCurrent(glfwWindow);
+		err = glasses->InitGlassesOpenGLContext();
+		if (err != T5_SUCCESS)
+		{
+			std::cerr << "Error: [" << t5GetResultMessage(err) << "] initializing OpenGL for glasses " << glassesID << std::endl;
+			return false;
+		}
 	}
 
 	std::cout << "IPD = " << glasses->GetIpd() << std::endl;

@@ -37,7 +37,7 @@ class HelloT5Cube : public GLApp::Application
 		void BlitToScreen(int dstHeight, int dstWidth);
 	};
 
-	// Are these the right defaults? Values were pull from other
+	// Are these the right defaults? Values were pulled from other
 	// source references
 	int defaultWidth = 1216;
 	int defaultHeight = 768;

@@ -21,7 +21,7 @@ Glasses::~Glasses()
 
 T5_Result Glasses::Acquire(std::string displayName)
 {
-	T5_Result err = t5AcquireGlasses(handle, displayName.c_str());
+	T5_Result err = t5ReserveGlasses(handle, displayName.c_str());
 	isAcquired = (err == T5_SUCCESS);
 	return err;
 }
@@ -39,7 +39,7 @@ T5_Result Glasses::EnsureReady()
 
 T5_Result Glasses::InitGlassesOpenGLContext()
 {
-	return t5InitGlassesGraphicsContext(handle, kT5_GraphicsApi_Gl, nullptr);
+	return t5InitGlassesGraphicsContext(handle, kT5_GraphicsApi_GL, nullptr);
 }
 
 T5_Result Glasses::SendFrameToGlasses(const T5_FrameInfo& info)
@@ -50,7 +50,7 @@ T5_Result Glasses::SendFrameToGlasses(const T5_FrameInfo& info)
 OptGlassesPose Glasses::GetGlassesPose()
 {
 	T5_GlassesPose pose;
-	auto err = t5GetGlassesPose(handle, &pose);
+	auto err = t5GetGlassesPose(handle, kT5_GlassesPoseUsage_GlassesPresentation, &pose);
 	return err ? OptGlassesPose(err) : OptGlassesPose(pose);
 }
 

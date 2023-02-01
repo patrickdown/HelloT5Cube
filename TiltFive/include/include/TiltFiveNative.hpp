@@ -83,12 +83,13 @@ class Client : public std::enable_shared_from_this<Client> {
 private:
     static constexpr bool kDebug = true;
 
-    Client(std::string applicationId, std::string applicationVersion)
+    Client(std::string applicationId, std::string applicationVersion, const uint8_t sdkType)
         : mApplicationId(std::move(applicationId))
         , mApplicationVersion(std::move(applicationVersion)) {
 
         mClientInfo.applicationId      = mApplicationId.c_str();
         mClientInfo.applicationVersion = mApplicationVersion.c_str();
+        mClientInfo.sdkType            = sdkType;
     }
 
     const std::string mApplicationId;
@@ -112,11 +113,13 @@ private:
 
     friend auto obtainClient(const std::string& applicationId,
                              const std::string& applicationVersion,
-                             void* platformContext) -> Result<std::shared_ptr<Client>>;
+                             void* platformContext,
+                             const uint8_t sdkType) -> Result<std::shared_ptr<Client>>;
 
     static auto create(const std::string& applicationId,
                        const std::string& applicationVersion,
-                       void* platformContext) -> Result<std::shared_ptr<Client>> {
+                       void* platformContext,
+                       const uint8_t sdkType) -> Result<std::shared_ptr<Client>> {
 
         // Validate inputs
         if (applicationId.length() > T5_MAX_STRING_PARAM_LEN) {
@@ -128,7 +131,8 @@ private:
         }
 
         // Create client
-        auto client = std::shared_ptr<Client>(new Client(applicationId, applicationVersion));
+        auto client =
+            std::shared_ptr<Client>(new Client(applicationId, applicationVersion, sdkType));
 
         // Start up the service connection
         auto err = t5CreateContext(&client->mContext, &client->mClientInfo, platformContext);
@@ -606,8 +610,9 @@ public:
 
     /// Cancel an image buffer in use by the service for freeing.
     //
-    /// \param[in] buffer - A pointer to the buffer to be canceled and released from use by the service.
-    auto cancelCamImageBuffer(uint8_t *buffer) -> Result<void> {
+    /// \param[in] buffer - A pointer to the buffer to be canceled and released from use by the
+    /// service.
+    auto cancelCamImageBuffer(uint8_t* buffer) -> Result<void> {
         T5_Result err = t5CancelCamImageBuffer(mGlasses, buffer);
         if (!err) {
             return kSuccess;
@@ -1329,13 +1334,16 @@ public:
 /// \param[in] applicationId      - Application ID. Refer to T5 docs for format.
 /// \param[in] applicationVersion - Application version. Refer to T5 docs for format.
 /// \param[in] platformContext    - Platform specific context. Refer to T5 docs for format.
+/// \param[in] sdkType            - Internal type. Leave at default value unless otherwise
+///                                 instructed by T5 staff.
 ///
 /// \return Instance of the Tilt Five™ API client or error.
 inline auto obtainClient(const std::string& applicationId,
                          const std::string& applicationVersion,
-                         void* platformContext) -> Result<std::shared_ptr<Client>> {
+                         void* platformContext,
+                         const uint8_t sdkType = 0) -> Result<std::shared_ptr<Client>> {
 
-    return Client::create(applicationId, applicationVersion, platformContext);
+    return Client::create(applicationId, applicationVersion, platformContext, sdkType);
 }
 
 /// \brief Obtain an instance of the Tilt Five™ Glasses

@@ -67,6 +67,12 @@ bool HelloT5Cube::InitializeContext()
 	glEnable(GL_CULL_FACE);
 	glEnable(GL_DEPTH_TEST);
 
+	if(GLAD_GL_OVR_multiview)
+		std::cerr << "OVR_multiview available " << std::endl;
+		
+	if(GLAD_GL_OVR_multiview2)
+		std::cerr << "OVR_multiview2 available " << std::endl;
+
 	return true;
 }
 

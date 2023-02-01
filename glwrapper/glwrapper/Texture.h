@@ -66,6 +66,13 @@ namespace GLWrapper {
 			assert(handle != 0);
 			glTextureStorage2D(handle, levels, internalformat, width, height);
 		}
+
+		void SetTextureStorage(GLenum internalformat, GLsizei width, GLsizei height, GLsizei depth, GLsizei levels = 1) 
+		{
+			assert(handle != 0);
+			glTextureStorage3D(handle, levels, internalformat, width, height, depth);
+
+		}
 	};
 
 

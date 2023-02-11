@@ -4,11 +4,11 @@ Hello T5 Cube is a small OpenGL project to demonstrate using the [Tilt Five](htt
 
 
 ### Command line options
-<no commands> - Render separeate left and right images in to passes and submit them to T5
+__no command__ - Render separate left and right images in two passes and submit them to T5
 
-multiview - Render using multiview and submit stereo images to T5 via texture array
+multiview - Render in a single pass using multiview and submit stereo images to T5 via texture array
 
-multiview-copy Render using multiview copy copying texture array layers to left and right textures and submitting the separare images to T5
+multiview-copy Render in a single pass using multiview then copying texture array layers into left and right textures and submit the separare images to T5
 
 debug - turn on GL_DEBUG_OUTPUT
 

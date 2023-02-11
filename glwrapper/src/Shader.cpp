@@ -1,5 +1,6 @@
 #include <glwrapper/Shader.h>
 #include <util/Wrapper.h>
+#include <iostream>
 
 namespace GLWrapper
 {
@@ -41,21 +42,21 @@ namespace GLWrapper
 			errorMsg = vertex->GetErrorMessage();
 			return false;
 		}
-
+		
 		auto fragment = MakeOwned<Shader>();
 		if (!fragment->Compile(GL_FRAGMENT_SHADER, fragmentCode))
 		{
 			errorMsg = fragment->GetErrorMessage();
 			return false;
 		}
-
+		
 		assert(handle == 0);
 		handle = glCreateProgram();
 
 		glAttachShader(handle, (GLuint)*vertex);
 		glAttachShader(handle, (GLuint)*fragment);
 		glLinkProgram(handle);
-
+		
 		if (!IsValid())
 		{
 			char infoLog[512];
@@ -63,6 +64,7 @@ namespace GLWrapper
 			errorMsg = std::string("ERROR::SHADER::PROGRAM::LINKING_FAILED\n") + infoLog;
 			return false;
 		}
+		
 
 		return true;
 	}
@@ -70,7 +72,7 @@ namespace GLWrapper
 	bool ShaderProgram::IsValid()
 	{
 		int success;
-		glGetShaderiv(handle, GL_LINK_STATUS, &success);
+		glGetProgramiv(handle, GL_LINK_STATUS, &success);
 
 		return success != 0;
 	}

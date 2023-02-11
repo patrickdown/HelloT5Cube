@@ -3,6 +3,7 @@
 #include <glm/glm.hpp>
 #include <glm/ext.hpp>
 #include <string>
+#include <span>
 
 namespace GLWrapper
 {
@@ -57,6 +58,12 @@ namespace GLWrapper
 			assert(handle != 0);
 			auto loc = glGetUniformLocation(handle, name.c_str());
 			glUniformMatrix4fv(loc, 1, GL_FALSE, glm::value_ptr(value));
+		}
+
+		void Set(std::string name, std::span<glm::mat4x4> value) {
+			assert(handle != 0);
+			auto loc = glGetUniformLocation(handle, name.c_str());
+			glUniformMatrix4fv(loc, value.size(), GL_FALSE, glm::value_ptr(value.front()));
 		}
 
 		void Set(std::string name, float value)

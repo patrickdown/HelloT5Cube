@@ -9,7 +9,7 @@
 Get static data defined in InlineVertexData and InlineShaderCode
 *****************************************************************************/
 std::span<const VertexPC> GetCubeVertices();
-const char* GetVertexShaderCode();
+const char* GetVertexShaderCode(bool multiview = false);
 const char* GetFragmentShaderCode();
 
 /****************************************************************************
@@ -32,32 +32,86 @@ and set up assets for rendering.
 *****************************************************************************/
 bool HelloT5Cube::InitializeContext()
 {
+	if(glDebug)
+	{ 
+		EnableDebug();
+		std::cerr << "OpenGL debugging enabled" << std::endl;
+	}
+
 	// All T5 init in here
 	if (!InitializeT5())
 		return false;
 
+	if(GLAD_GL_OVR_multiview2)
+		std::cerr << "OVR_multiview2 supported " << std::endl;
+
+	isMultiviewCapable = GLAD_GL_OVR_multiview2;
+	useMultiview = useMultiview && isMultiviewCapable;
+	copyMultviewTextures = useMultiview && copyMultviewTextures;
+
+	if(useMultiview) {
+		std::cerr << "Rendering using OVR_multiview2" << std::endl;
+	}
+
+	if(copyMultviewTextures) {
+		std::cerr << "Copying multiview layers to single textures" << std::endl;
+	}
+
 	// Compile shaders
 	cubeShader = MakeOwned<GLW::ShaderProgram>();
-
-	if (!cubeShader->Compile(GetVertexShaderCode(), GetFragmentShaderCode()))
+	
+	if (!cubeShader->Compile(GetVertexShaderCode(useMultiview), GetFragmentShaderCode()))
 	{
 		std::cerr << cubeShader->GetErrorMessage() << std::endl;
 		return false;
 	}
-
+	
 	//Setup vertex arrays
 	cubeVertexBuffer = MakeOwned<GLW::Buffer>();
 	cubeVertexBuffer->Create();
 	cubeVertexBuffer->StoreData(GetCubeVertices());
-
+	
 	cubeVertexArrays = MakeOwned<GLW::VertexArray>();
 	cubeVertexArrays->Create();
 	cubeVertexArrays->AttachBuffer(*cubeVertexBuffer, cubeShader->GetAttribLocation("vPos"), VertexPC::positionMem);
 	cubeVertexArrays->AttachBuffer(*cubeVertexBuffer, cubeShader->GetAttribLocation("vCol"), VertexPC::colorMem);
-
+	
 	//Setup frame buffers for stereo
-	leftEyeDisplay.Initialize(defaultWidth, defaultHeight);
-	rightEyeDisplay.Initialize(defaultWidth, defaultHeight);
+	if(useMultiview) {
+		
+		stereoEyeDisplay.InitializeMultiview(defaultWidth, defaultHeight, 2);
+
+		leftLayerTexture = stereoEyeDisplay.GetTextureLayer(0);
+		rightLayerTexture = stereoEyeDisplay.GetTextureLayer(1);
+
+		rightLayerFramebuffer = MakeOwned<GLW::Framebuffer>();
+		rightLayerFramebuffer->Create();
+		rightLayerFramebuffer->ColorAttachment(*rightLayerTexture);
+		rightLayerFramebuffer->DrawBuffers(0);
+
+		if(!rightLayerFramebuffer->IsReady()) {
+			std::cerr << "blitFramebuffer: " << rightLayerFramebuffer->GetErrorMessage() << std::endl;
+			return false;
+		}
+
+		leftLayerFramebuffer = MakeOwned<GLW::Framebuffer>();
+		leftLayerFramebuffer->Create();
+		leftLayerFramebuffer->ColorAttachment(*leftLayerTexture);
+		leftLayerFramebuffer->DrawBuffers(0);
+
+		if(!leftLayerFramebuffer->IsReady()) {
+			std::cerr << "blitFramebuffer: " << leftLayerFramebuffer->GetErrorMessage() << std::endl;
+			return false;
+		}
+		
+		leftEyeDisplay.Initialize(defaultWidth, defaultHeight, false);
+		rightEyeDisplay.Initialize(defaultWidth, defaultHeight, false);
+
+	}
+	else {
+		leftEyeDisplay.Initialize(defaultWidth, defaultHeight);
+		rightEyeDisplay.Initialize(defaultWidth, defaultHeight);
+	}
 
 	float ipd = glasses->GetIpd();
 
@@ -67,19 +121,13 @@ bool HelloT5Cube::InitializeContext()
 	glEnable(GL_CULL_FACE);
 	glEnable(GL_DEPTH_TEST);
 
-	if(GLAD_GL_OVR_multiview)
-		std::cerr << "OVR_multiview available " << std::endl;
-		
-	if(GLAD_GL_OVR_multiview2)
-		std::cerr << "OVR_multiview2 available " << std::endl;
-
 	return true;
 }
 
 /****************************************************************************
 Initialize a framebuffer to be a render target.
 *****************************************************************************/
-bool HelloT5Cube::DisplaySurface::Initialize(int width, int height)
+bool HelloT5Cube::DisplaySurface::Initialize(int width, int height, bool hasDepth)
 {
 	this->width = width;
 	this->height = height;
@@ -88,24 +136,69 @@ bool HelloT5Cube::DisplaySurface::Initialize(int width, int height)
 	texture = MakeOwned<GLW::Texture>();
 	texture->Create(GL_TEXTURE_2D);
 	texture->SetTextureStorage(GL_RGBA8, width, height);
-	texture->SetMinFilter(GL_NEAREST);
-	texture->SetMagFilter(GL_NEAREST);
+	texture->SetMinFilter(GL_LINEAR);
+	texture->SetMagFilter(GL_LINEAR);
 
-	// Make a depth buffer
-	depth = MakeOwned<GLW::Renderbuffer>();
-	depth->Create();
-	depth->SetDepthStorage(width, height);
+	if(hasDepth) {
+		// Make a depth buffer
+		depth = MakeOwned<GLW::Texture>();
+		depth->Create(GL_TEXTURE_2D);
+		depth->SetDepthStorage(width, height);
+		depth->SetMinFilter(GL_LINEAR);
+		depth->SetMagFilter(GL_LINEAR);
+	}
 
 	// Attach texture and depth
 	framebuffer = MakeOwned<GLW::Framebuffer>();
 	framebuffer->Create();
 	framebuffer->ColorAttachment(*texture);
-	framebuffer->DepthAttachment(*depth);
+	if(hasDepth) {
+		framebuffer->DepthAttachment(*depth);
+	}
 	framebuffer->DrawBuffers(0);
 
 	if (!framebuffer->IsReady())
 	{
-		std::cerr << "leftEyeFramebuffer: " << framebuffer->GetErrorMessage() << std::endl;
+		std::cerr << "Framebuffer: " << framebuffer->GetErrorMessage() << std::endl;
+		return false;
+	}
+
+	return true;
+}
+
+/****************************************************************************
+Initialize a framebuffer to be a render target.
+*****************************************************************************/
+bool HelloT5Cube::DisplaySurface::InitializeMultiview(int width, int height, int layers) {
+	this->width = width;
+	this->height = height;
+	this->layers = layers;
+
+	// Make a texture to hold the image that will be passed to the glasses
+	texture = MakeOwned<GLW::Texture>();
+	texture->Create(GL_TEXTURE_2D_ARRAY);
+	texture->SetTextureStorage(GL_RGBA8, width, height, layers);
+	texture->SetMinFilter(GL_LINEAR);
+	texture->SetMagFilter(GL_LINEAR);
+
+	// Make a depth buffer
+	depth = MakeOwned<GLW::Texture>();
+	depth->Create(GL_TEXTURE_2D_ARRAY);
+	depth->SetDepthStorage(width, height, layers);
+	depth->SetMinFilter(GL_LINEAR);
+	depth->SetMagFilter(GL_LINEAR);
+
+	// Attach texture and depth
+	framebuffer = MakeOwned<GLW::Framebuffer>();
+	framebuffer->Create();
+	framebuffer->Bind(GL_DRAW_FRAMEBUFFER);
+	framebuffer->ColorAttachmentMultiview(*texture, 0, layers);
+	framebuffer->DepthAttachmentMultiview(*depth, 0, layers);
+	framebuffer->DrawBuffers(0);
+	framebuffer->Unbind(GL_DRAW_FRAMEBUFFER);
+
+	if(!framebuffer->IsReady()) {
+		std::cerr << "Multiview Framebuffer: " << framebuffer->GetErrorMessage() << std::endl;
 		return false;
 	}
 
@@ -135,6 +228,18 @@ Used to mirror the rendered image to the display
 void HelloT5Cube::DisplaySurface::BlitToScreen(int dstWidth, int dstHeight)
 {
 	framebuffer->BlitToScreen(0, 0, width, height, 0, 0, dstWidth, dstHeight, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+}
+
+void HelloT5Cube::DisplaySurface::BlitToFrameBuffer(GLW::Framebuffer& dstFramebuffer, int dstHeight, int dstWidth) 	{
+	framebuffer->BlitToFramebuffer(dstFramebuffer, 0, 0, width, height, 0, 0, dstWidth, dstHeight, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+}
+
+void HelloT5Cube::DisplaySurface::BlitFromFrameBuffer(GLW::Framebuffer& dstFramebuffer) {
+	dstFramebuffer.BlitToFramebuffer(*framebuffer, 0, 0, width, height, 0, 0, width, height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+}
+
+Owned<GLW::Texture> HelloT5Cube::DisplaySurface::GetTextureLayer(int layer) {
+	return texture->CreateView(GL_TEXTURE_2D, GL_RGBA8, 0, 1, layer, 1);
 }
 
 /****************************************************************************
@@ -241,17 +346,11 @@ bool HelloT5Cube::ConnectGlasses(std::string glassesID)
 
 	std::cout << "Glasses " << glassesID << " state: " << GetConnectionText(glasses->GetConnectionState()) << std::endl;
 
-	err = glasses->InitGlassesOpenGLContext();
+	err = glasses->InitGlassesOpenGLContext(useMultiview && !copyMultviewTextures);
 	if (err != T5_SUCCESS)
 	{
 		std::cerr << "Error: [" << t5GetResultMessage(err) << "] initializing OpenGL for glasses " << glassesID << std::endl;
-		glfwMakeContextCurrent(glfwWindow);
-		err = glasses->InitGlassesOpenGLContext();
-		if (err != T5_SUCCESS)
-		{
-			std::cerr << "Error: [" << t5GetResultMessage(err) << "] initializing OpenGL for glasses " << glassesID << std::endl;
-			return false;
-		}
+		return false;
 	}
 
 	std::cout << "IPD = " << glasses->GetIpd() << std::endl;
@@ -321,7 +420,7 @@ leftEyePose/righteyePose - represents the offset of the eye in head frame
 *****************************************************************************/
 void HelloT5Cube::Render()
 {
-	const float ratio = leftEyeDisplay.width / (float)leftEyeDisplay.height;
+	const float ratio = defaultWidth / (float)defaultHeight;
 
 	// Rotate cube
 	GLApp::Transform modelTran;
@@ -339,29 +438,49 @@ void HelloT5Cube::Render()
 	cubeShader->Use();
 	cubeVertexArrays->Bind();
 
+
 	// Render left eye
 	auto mvpLeft = perspectiveProj * viewLeftMat * modelMat;
-
-	cubeShader->Set("MVP", mvpLeft);
-	leftEyeDisplay.BeginDraw();
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glDrawArrays(GL_TRIANGLES, 0, 36);
-	leftEyeDisplay.EndDraw();
 
 	// Render right eye
 	auto mvpRight = perspectiveProj * viewRightMat * modelMat;
 
-	cubeShader->Set("MVP", mvpRight);
-	rightEyeDisplay.BeginDraw();
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glDrawArrays(GL_TRIANGLES, 0, 36);
-	rightEyeDisplay.EndDraw();
-
-	// Blit right eye to display
 	int width = 0;
 	int height = 0;
 	GetFramebufferSize(width, height);
-	rightEyeDisplay.BlitToScreen(width, height);
+	if(useMultiview) {
+		glm::highp_mat4 mvpArr[2];
+		mvpArr[0] = mvpLeft;
+		mvpArr[1] = mvpRight;
+
+		cubeShader->Set("MVP", mvpArr);
+		stereoEyeDisplay.BeginDraw();
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+		stereoEyeDisplay.EndDraw();
+
+		leftEyeDisplay.BlitFromFrameBuffer(*leftLayerFramebuffer);
+		rightEyeDisplay.BlitFromFrameBuffer(*rightLayerFramebuffer);
+
+		rightEyeDisplay.BlitToScreen(width, height);
+	}
+	else {
+		cubeShader->Set("MVP", mvpLeft);
+		leftEyeDisplay.BeginDraw();
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+		leftEyeDisplay.EndDraw();
+
+		cubeShader->Set("MVP", mvpRight);
+		rightEyeDisplay.BeginDraw();
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+		rightEyeDisplay.EndDraw();
+
+		// Blit right eye to display
+		rightEyeDisplay.BlitToScreen(width, height);
+	}
+
 }
 
 /****************************************************************************
@@ -370,6 +489,7 @@ for projection.
 *****************************************************************************/
 void HelloT5Cube::SendFramesToGlasses()
 {
+
 	T5_Result result;
 	if (isPoseValid)
 	{
@@ -382,9 +502,16 @@ void HelloT5Cube::SendFramesToGlasses()
 
 		frameInfo.texWidth_PIX = leftEyeDisplay.width;
 		frameInfo.texHeight_PIX = leftEyeDisplay.height;
-
-		frameInfo.leftTexHandle = leftEyeDisplay.texture->HandleAsVoidPtr();
-		frameInfo.rightTexHandle = rightEyeDisplay.texture->HandleAsVoidPtr();
+		if(useMultiview && !copyMultviewTextures) 
+		{
+			frameInfo.leftTexHandle = stereoEyeDisplay.texture->HandleAsVoidPtr();
+			frameInfo.rightTexHandle = 0;
+		}
+		else 
+		{
+			frameInfo.leftTexHandle = leftEyeDisplay.texture->HandleAsVoidPtr();
+			frameInfo.rightTexHandle = rightEyeDisplay.texture->HandleAsVoidPtr();
+		}
 
 		auto leftPos = leftEyePose.TransformPointToParentFrame(glm::vec3(0,0,0));
 		leftPos = headPose.TransformPointToParentFrame(leftPos);

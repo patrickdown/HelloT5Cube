@@ -24,6 +24,7 @@ class Application
 	void SetWindowSize(int width, int height);
 	void SetWindowTitle(std::string title);
 	void GetFramebufferSize(int& width, int& height);
+	void EnableDebug();
 
 	virtual void OnKey(int key, int scancode, int action, int mods);
 	virtual bool BindOpenGL();

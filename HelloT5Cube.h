@@ -9,6 +9,8 @@
 #include <glapplication/Transform.h>
 #include <util/ChangeDetector.h>
 
+
+
 namespace GLW = GLWrapper;
 namespace T5W = T5Wrapper;
 namespace GLApp = GLApplication;
@@ -25,23 +27,40 @@ class HelloT5Cube : public GLApp::Application
 	{
 		int height;
 		int width;
+		int layers = 1;
 
 		Owned<GLW::Texture> texture;
-		Owned<GLW::Renderbuffer> depth;
+		Owned<GLW::Texture> depth;
 		Owned<GLW::Framebuffer> framebuffer;
 
-		bool Initialize(int height, int width);
+		bool Initialize(int height, int width, bool hasDepth = true);
+		bool InitializeMultiview(int height, int width, int layers);
 		void BeginDraw();
 		void EndDraw();
 
 		void BlitToScreen(int dstHeight, int dstWidth);
+		void BlitToFrameBuffer(GLW::Framebuffer& framebuffer, int dstHeight, int dstWidth);
+		void BlitFromFrameBuffer(GLW::Framebuffer& framebuffer);
+
+		Owned<GLW::Texture> GetTextureLayer(int layer);
 	};
+
+	bool glDebug;
 
 	// Are these the right defaults? Values were pulled from other
 	// source references
 	int defaultWidth = 1216;
 	int defaultHeight = 768;
 	float defaultFOV = 48.0;
+
+	bool isMultiviewCapable = false;
+	bool useMultiview = false;
+	bool copyMultviewTextures = false;
+
+	Owned<GLW::Texture> leftLayerTexture;
+	Owned<GLW::Texture> rightLayerTexture;
+	Owned<GLW::Framebuffer> leftLayerFramebuffer;
+	Owned<GLW::Framebuffer> rightLayerFramebuffer;
 
 	// program and vertex buffers for rendering
 	Owned<GLW::ShaderProgram> cubeShader;
@@ -51,6 +70,8 @@ class HelloT5Cube : public GLApp::Application
 	// Frame buffers for left and right eye
 	DisplaySurface leftEyeDisplay;
 	DisplaySurface rightEyeDisplay;
+
+	DisplaySurface stereoEyeDisplay;
 
 	// T5 handles
 	Owned<T5W::Context> context;
@@ -88,7 +109,11 @@ class HelloT5Cube : public GLApp::Application
 	void SendFramesToGlasses();
 
 	public:
-	HelloT5Cube(int width, int height, std::string title) 
-	: GLApplication::Application(width, height, title) {}
+	HelloT5Cube(int width, int height, std::string title, bool multiview, bool copyTextures, bool dgl) 
+	: GLApplication::Application(width, height, title), 
+	useMultiview(multiview), 
+	copyMultviewTextures(copyTextures),
+	glDebug(dgl)
+	{}
 };
 

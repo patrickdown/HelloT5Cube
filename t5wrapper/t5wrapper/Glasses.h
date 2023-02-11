@@ -36,7 +36,7 @@ namespace T5Wrapper
 		T5_Result Acquire(std::string displayName);
 		T5_Result Release();
 		T5_Result EnsureReady();
-		T5_Result InitGlassesOpenGLContext();
+		T5_Result InitGlassesOpenGLContext(bool layered = false);
 		T5_Result SendFrameToGlasses(const T5_FrameInfo& info);
 
 		OptConnectionState GetConnectionState();

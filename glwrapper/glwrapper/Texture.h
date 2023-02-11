@@ -1,5 +1,6 @@
 #pragma once
 #include <util/Wrapper.h>
+#include <iostream>
 
 namespace GLWrapper {
 
@@ -20,6 +21,11 @@ namespace GLWrapper {
 		{
 			assert(handle == 0);
 			glCreateTextures(target, 1, &handle);
+		}
+
+		void Generate() {
+			assert(handle == 0);
+			glGenTextures(1, &handle);
 		}
 
 		void Delete()
@@ -61,17 +67,51 @@ namespace GLWrapper {
 			glTextureParameteri(handle, GL_TEXTURE_MAG_FILTER, filter);
 		}
 
-		void SetTextureStorage(GLenum internalformat, GLsizei width, GLsizei height, GLsizei levels = 1)
+		void SetTextureStorage(GLenum internalformat, GLsizei width, GLsizei height)
 		{
+			assert(handle != 0);
+			glTextureStorage2D(handle, 1, internalformat, width, height);
+		}
+
+		void SetTextureStorage(GLenum internalformat, GLsizei width, GLsizei height, GLsizei depth) 
+		{
+			assert(handle != 0);
+			glTextureStorage3D(handle, 1, internalformat, width, height, depth);
+		}
+
+		void SetTextureMipmapStorage(GLenum internalformat, GLsizei width, GLsizei height, GLsizei levels) {
 			assert(handle != 0);
 			glTextureStorage2D(handle, levels, internalformat, width, height);
 		}
 
-		void SetTextureStorage(GLenum internalformat, GLsizei width, GLsizei height, GLsizei depth, GLsizei levels = 1) 
-		{
+		void SetTextureMipmapStorage(GLenum internalformat, GLsizei width, GLsizei height, GLsizei depth, GLsizei levels) {
 			assert(handle != 0);
 			glTextureStorage3D(handle, levels, internalformat, width, height, depth);
+		}
 
+		void SetDepthStorage(GLsizei width, GLsizei height) {
+			assert(handle != 0);
+			glTextureStorage2D(handle, 1, GL_DEPTH_COMPONENT24, width, height);
+		}
+
+		void SetDepthStorage( GLsizei width, GLsizei height, GLsizei depth) {
+			assert(handle != 0);
+			glTextureStorage3D(handle, 1, GL_DEPTH_COMPONENT24, width, height, depth);
+
+		}
+
+		Owned<Texture> CreateView(GLenum target,
+						GLenum internalformat,
+						GLuint minlevel,
+						GLuint numlevels,
+						GLuint minlayer,
+						GLuint numlayers) {
+
+			Owned<Texture> view = MakeOwned<Texture>();
+			view->Generate();
+			glTextureView((GLuint)*view, target, handle, internalformat, minlevel, numlevels, minlayer, numlayers);
+
+			return view;
 		}
 	};
 

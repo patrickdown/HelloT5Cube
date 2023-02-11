@@ -62,6 +62,10 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 	application->OnKey(key, scancode, action, mods);
 }
 
+void GLAPIENTRY debug_callback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam) {
+	std::cout << "GL Error msg: " << message << std::endl;
+}
+
 void Application::OnKey(int key, int scancode, int action, int mods)
 {
 	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
@@ -112,6 +116,19 @@ void Application::GetFramebufferSize(int& width, int& height)
 	if(glfwWindow)
 		glfwGetFramebufferSize(glfwWindow, &width, &height);
 }
+
+
+void Application::EnableDebug() {
+
+	if(glDebugMessageCallback) {
+		glEnable(GL_DEBUG_OUTPUT);
+		glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+		glDebugMessageCallback(debug_callback, this);
+
+	}
+}
+
+
 
 void Application::Run()
 {

@@ -37,22 +37,38 @@ namespace GLWrapper
 			glBindFramebuffer(target, handle);
 		}
 
+		void Unbind(GLenum target) {
+			glBindFramebuffer(target, 0);
+		}
+
 		void ColorAttachment(Texture texture, int textureLevel = 0, int colorAttachment = 0)
 		{
 			assert(handle != 0);
 			glNamedFramebufferTexture(handle, GL_COLOR_ATTACHMENT0 + colorAttachment, (GLuint)texture, textureLevel);
 		}
 
+		void ColorAttachmentMultiview(Texture texture, int startLayer, int numLayers, int textureLevel = 0, int colorAttachment = 0) {
+			assert(handle != 0);
+			glFramebufferTextureMultiviewOVR(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + colorAttachment, (GLuint)texture, textureLevel, startLayer, numLayers);
+		}
+
 		void ColorAttachment(Renderbuffer renderbuffer, int colorAttachment = 0)
 		{
 			assert(handle != 0);
 			glNamedFramebufferRenderbuffer(handle, GL_COLOR_ATTACHMENT0 + colorAttachment, GL_RENDERBUFFER, (GLuint)renderbuffer);
+
+			
 		}
 
 		void DepthAttachment(Texture texture, int textureLevel = 0)
 		{
 			assert(handle != 0);
 			glNamedFramebufferTexture(handle, GL_DEPTH_ATTACHMENT, (GLuint)texture, textureLevel);
+		}
+
+		void DepthAttachmentMultiview(Texture texture, int startLayer, int numLayers, int textureLevel = 0) {
+			assert(handle != 0);
+			glFramebufferTextureMultiviewOVR(GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, (GLuint)texture, textureLevel, startLayer, numLayers);
 		}
 
 		void DepthAttachment(Renderbuffer renderbuffer)
@@ -85,6 +101,11 @@ namespace GLWrapper
 		{
 			assert(handle != 0);
 			glBlitNamedFramebuffer(handle, 0, srcX0, srcY0, srcX1, srcY1, dstX0, dstY0, dstX1, dstY1, mask, filter);
+		}
+
+		void BlitToFramebuffer(Framebuffer& fb, GLint srcX0, GLint srcY0, GLint srcX1, GLint srcY1, GLint dstX0, GLint dstY0, GLint dstX1, GLint dstY1, GLbitfield mask, GLenum filter) {
+			assert(handle != 0);
+			glBlitNamedFramebuffer(handle, fb.handle, srcX0, srcY0, srcX1, srcY1, dstX0, dstY0, dstX1, dstY1, mask, filter);
 		}
 
 		GLenum CheckStatus()

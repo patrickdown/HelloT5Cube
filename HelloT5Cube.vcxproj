@@ -172,6 +172,7 @@ copy $(ProjectDir)glfw-3.3.8.bin.WIN64\lib-vc2022\glfw3.dll $(TargetDir)</Comman
     <ClInclude Include="t5wrapper\t5wrapper\Conversions.h" />
     <ClInclude Include="t5wrapper\t5wrapper\Glasses.h" />
     <ClInclude Include="t5wrapper\t5wrapper\OptError.h" />
+    <ClInclude Include="t5wrapper\t5wrapper\T5MultiviewExt.h" />
     <ClInclude Include="util\util\ChangeDetector.h" />
     <ClInclude Include="util\util\Wrapper.h" />
     <ClInclude Include="VertexDefinition.h" />

@@ -1,4 +1,5 @@
 #include <t5wrapper/Glasses.h>
+#include <t5wrapper/T5MultiviewExt.h>
 
 namespace T5Wrapper {
 
@@ -37,8 +38,17 @@ T5_Result Glasses::EnsureReady()
 	return t5EnsureGlassesReady(handle);
 }
 
-T5_Result Glasses::InitGlassesOpenGLContext()
+T5_Result Glasses::InitGlassesOpenGLContext(bool layered)
 {
+	if(layered) {
+		T5_GraphicsContextGL settings;
+
+		settings.textureMode = kT5_GraphicsApi_GL_TextureMode_Array;
+		settings.leftEyeArrayIndex = 0;
+		settings.rightEyeArrayIndex = 1;
+		return t5InitGlassesGraphicsContext(handle, kT5_GraphicsApi_GL, &settings);
+	}
+
 	return t5InitGlassesGraphicsContext(handle, kT5_GraphicsApi_GL, nullptr);
 }
 

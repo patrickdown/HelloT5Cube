@@ -122,5 +122,8 @@
     <ClInclude Include="util\util\ChangeDetector.h">
       <Filter>Header Files\Util</Filter>
     </ClInclude>
+    <ClInclude Include="t5wrapper\t5wrapper\T5MultiviewExt.h">
+      <Filter>Header Files\T5Wrapper</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

@@ -2,8 +2,8 @@
 #include <util/Wrapper.h>
 #include <TiltFiveNative.h>
 #include <variant>
-#include <t5Wrapper/Context.h>
-#include <t5Wrapper/OptError.h>
+#include <t5wrapper/Context.h>
+#include <t5wrapper/OptError.h>
 
 
 namespace T5Wrapper

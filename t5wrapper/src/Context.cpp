@@ -1,3 +1,5 @@
+#include <thread>
+#include <string.h>
 #include <t5wrapper/Context.h>
 
 #define IDENTIFIER_BUFFER_SIZE 1024

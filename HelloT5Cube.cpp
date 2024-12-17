@@ -1,5 +1,5 @@
 #include <iostream>
-#include <t5Wrapper/Conversions.h>
+#include <t5wrapper/Conversions.h>
 #include <glapplication/Transform.h>
 #include "HelloT5Cube.h"
 #include "VertexDefinition.h"
